@@ -37,3 +37,5 @@ The GDD then is the communication tool from which all the members of the team ca
 
 ## Version Number, Author, Date
 *Add versioning info and date here.*
+
+{% include TableOfContents.md %}
