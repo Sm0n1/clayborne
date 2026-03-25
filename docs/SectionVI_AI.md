@@ -1,0 +1,14 @@
+# Section VI – Artificial Intelligence
+
+## 1. Opponent AI
+*Active opponents requiring strategy.*
+
+## 2. Enemy AI
+*Villains and monsters.*
+
+## 3. Non-combat Characters
+## 4. Friendly Characters
+
+## 5. Support AI
+### 5.1 Player and Collision Detection
+### 5.2 Pathfinding
