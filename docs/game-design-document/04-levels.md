@@ -1,7 +1,8 @@
 ---
 title: Levels
 layout: page
-nav_order: 6
+parent: Game Design Document
+nav_order: 5
 ---
 
 # Section IV – Levels

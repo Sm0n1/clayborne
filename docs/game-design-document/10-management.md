@@ -1,7 +1,8 @@
 ---
 title: Management
 layout: page
-nav_order: 12
+parent: Game Design Document
+nav_order: 11
 ---
 
 # Section X – Management

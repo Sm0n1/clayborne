@@ -1,7 +1,8 @@
 ---
 title: Game Overview
 layout: page
-nav_order: 3
+parent: Game Design Document
+nav_order: 2
 ---
 
 # Section I – Game Overview

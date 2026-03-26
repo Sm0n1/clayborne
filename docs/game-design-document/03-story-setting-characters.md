@@ -1,7 +1,8 @@
 ---
 title: Story, Setting, and Characters
 layout: page
-nav_order: 5
+parent: Game Design Document
+nav_order: 4
 ---
 
 # Section III – Story, Setting, and Characters

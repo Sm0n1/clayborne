@@ -1,7 +1,8 @@
 ---
 title: Interface
 layout: page
-nav_order: 7
+parent: Game Design Document
+nav_order: 6
 ---
 
 # Section V – Interface

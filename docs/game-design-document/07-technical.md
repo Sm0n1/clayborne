@@ -1,7 +1,8 @@
 ---
 title: Technical
 layout: page
-nav_order: 9
+parent: Game Design Document
+nav_order: 8
 ---
 
 # Section VII – Technical

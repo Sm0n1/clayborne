@@ -1,7 +1,8 @@
 ---
 title: Gameplay and Mechanics
 layout: page
-nav_order: 4
+parent: Game Design Document
+nav_order: 3
 ---
 
 # Section II – Gameplay and Mechanics

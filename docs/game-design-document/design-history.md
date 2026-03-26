@@ -1,7 +1,8 @@
 ---
 title: Design History
 layout: page
-nav_order: 2
+parent: Game Design Document
+nav_order: 1
 ---
 
 # Design History

@@ -1,7 +1,8 @@
 ---
 title: Secondary Software
 layout: page
-nav_order: 11
+parent: Game Design Document
+nav_order: 10
 ---
 
 # Section IX – Secondary Software

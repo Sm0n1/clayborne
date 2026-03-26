@@ -1,7 +1,8 @@
 ---
 title: Artificial Intelligence
 layout: page
-nav_order: 8
+parent: Game Design Document
+nav_order: 7
 ---
 
 # Section VI – Artificial Intelligence
