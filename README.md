@@ -81,9 +81,9 @@ If possible, mark functions as `constexpr`.
 
 Always use templates and concepts over inheritence. Avoid explicit function/operator overloading. In general, avoid polymorphism.
 
-#### C Arrays
+#### Arrays
 
-Prefer std::Array for static sizes, std::Vector for dynamic sizes, and std::Span for arguments.
+Prefer std::array for static sizes, std::vector for dynamic sizes, and std::span for arguments.
 
 #### Constants
 
