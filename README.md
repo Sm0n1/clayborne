@@ -83,7 +83,7 @@ Always use templates and concepts over inheritence. Avoid explicit function/oper
 
 #### Arrays
 
-Prefer std::array for static sizes, std::vector for dynamic sizes, and std::span for arguments.
+Prefer `std::array` for static sizes, `std::vector`  for dynamic sizes, and `std::span` for arguments if applicable.
 
 #### Constants
 
