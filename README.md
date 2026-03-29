@@ -17,19 +17,19 @@ All names, except template parameters, use `snake_case`. Template parameter name
 
 #### Namespaces
 
-Do not circumvent namespaces with `using namespace`.
+Do not circumvent namespaces with `using namespace`. Always wrap file contents in a namespace.
 
 #### Header Files
 
 All header files should contain a header guard of the following form:
 
 ```cpp
-#ifndef FOO_BAR_BAZ_H_
-#define FOO_BAR_BAZ_H_
+#ifndef NAME_OF_FILE_HPP
+#define NAME_OF_FILE_HPP
 
 ...
 
-#endif  // FOO_BAR_BAZ_H_
+#endif  // NAME_OF_FILE_HPP
 ```
 
 #### Enums
@@ -45,6 +45,20 @@ enum class Color {
 
 Note the use of an enum class and the trailing comma.
 
+#### Branches and Loops
+
+Always use curly braces for bodies, even if they only contain a single statement.
+
+```cpp
+if (should_return) {
+    return;
+}
+
+for (int i = 0; i < n; i += 1) {
+    sum += arr[i];
+}
+```
+
 #### Functions
 
 ```cpp
@@ -53,6 +67,8 @@ constexpr void foo_bar(int arg1, int arg2) {
 }
 ```
 
+If possible, mark functions as `constexpr`.
+
 #### Polymorhism
 
 Always use templates and concepts over inheritence. Avoid explicit function/operator overloading. In general, avoid polymorphism.
@@ -60,8 +76,6 @@ Always use templates and concepts over inheritence. Avoid explicit function/oper
 #### C Arrays
 
 Prefer std::Array for static sizes, std::Vector for dynamic sizes, and std::Span for arguments.
-
-If possible, mark functions as `constexpr`.
 
 #### Constants
 
