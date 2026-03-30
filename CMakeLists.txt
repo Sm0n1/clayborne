@@ -1,8 +1,18 @@
-cmake_minimum_required(VERSION 3.31)
+cmake_minimum_required(VERSION 3.22)
 
 project(Clayborne VERSION 0.1 LANGUAGES C CXX)
 
+option(CLAYBORNE_VENDORED "Use vendored libraries" OFF)
+
+if(CLAYBORNE_VENDORED)
+    add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
+else()
+    find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
+endif()
+
 add_executable(clayborne)
+
+target_link_libraries(mygame PRIVATE SDL3::SDL3)
 
 target_sources(clayborne PRIVATE
     src/main.cpp
