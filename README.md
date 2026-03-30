@@ -94,3 +94,10 @@ Avoid macros if possible. Use `constexpr` instead.
 #### Error Handling
 
 Avoid exceptions if possible. Use `std::optional` and `std::expecting` instead. Assert liberally.
+
+# Building
+
+If you want to use a vendored SDL3, use the following command:
+```sh
+cmake .. -D CLAYBORNE_VENDORED=ON
+```

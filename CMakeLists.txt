@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
 
+set(SDL_X11_XSCRNSAVER OFF CACHE BOOL "" FORCE)
+set(SDL_X11_TEST OFF CACHE BOOL "" FORCE)
+set(SDL_X11_XTEST OFF CACHE BOOL "" FORCE)
+
 project(Clayborne VERSION 0.1 LANGUAGES C CXX)
 
 option(CLAYBORNE_VENDORED "Use vendored libraries" OFF)
@@ -12,7 +16,7 @@ endif()
 
 add_executable(clayborne)
 
-target_link_libraries(mygame PRIVATE SDL3::SDL3)
+target_link_libraries(clayborne PRIVATE SDL3::SDL3)
 
 target_sources(clayborne PRIVATE
     src/main.cpp
