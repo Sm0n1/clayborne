@@ -1,0 +1,35 @@
+cmake_minimum_required(VERSION 4.3)
+
+project(Clayborne VERSION 0.1 LANGUAGES C CXX)
+
+target_sources(clayborne PRIVATE
+    src/main.cpp
+)
+
+if (MSVC)
+    target_compile_options(clayborne PRIVATE /W4 /WX)
+else()
+    target_compile_options(clayborne PRIVATE
+        -Wall
+        -Wextra
+        -Werror
+        -Wshadow
+        -Wconversion
+        -Wdouble-promotion
+        -Wformat=2
+        -Wundef
+        -Wnull-dereference
+        -Wpedantic
+        -Wimplicit-fallthrough
+        -Wmissing-declarations
+        -Wcast-qual
+        -Wwrite-strings
+        -Wold-style-cast
+        -Woverloaded-virtual
+        -Wnon-virtual-dtor
+        -Wuseless-cast
+        -Wzero-as-null-pointer-constant
+    )
+endif()
+
+# Add different builds
