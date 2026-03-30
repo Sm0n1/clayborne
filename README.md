@@ -79,7 +79,9 @@ If possible, mark functions as `constexpr`.
 
 #### Polymorhism
 
-Always use templates and concepts over inheritence. Avoid explicit function/operator overloading. In general, avoid polymorphism.
+We will be using EnTT to handle most of the game state. For this reason there is little reason for using the polymorphism features of C++. The following section covers the cases when EnTT is not applicable.
+
+Always use templates and concepts over inheritence. Avoid explicit function/operator overloading.
 
 #### Arrays
 
