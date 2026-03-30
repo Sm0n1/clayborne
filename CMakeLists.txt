@@ -29,7 +29,6 @@ else()
         -Wold-style-cast
         -Woverloaded-virtual
         -Wnon-virtual-dtor
-        -Wuseless-cast
         -Wzero-as-null-pointer-constant
     )
 endif()
