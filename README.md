@@ -6,7 +6,6 @@ https://drive.google.com/drive/folders/1sVGTf26g0Y38iN2YYh_g9bAhXBtHn969?usp=sha
 Includes report + presentation + meeting notes. 
 Easier for everyone to access it with the link :) 
 
-
 ### C++ Coding Guidelines
 
 The coding guidelines presented here are subject to change for the time being.
@@ -43,7 +42,8 @@ int x{ 0 };
 #### Enums
 
 ```cpp
-enum class Color {
+enum class color
+{
     red,
     green,
     blue,
@@ -55,22 +55,25 @@ Note the use of an enum class and the trailing comma.
 
 #### Branches and Loops
 
-Always use curly braces for bodies, even if they only contain a single statement.
-
 ```cpp
-if (should_return) {
+if (should_return)
+{
     return;
 }
 
-for (int i = 0; i < n; i += 1) {
+for (int i = 0; i < n; i += 1)
+{
     sum += arr[i];
 }
 ```
 
+Always use curly braces for bodies, even if they only contain a single statement.
+
 #### Functions
 
 ```cpp
-constexpr void foo_bar(int arg1, int arg2) {
+constexpr void foo_bar(int arg1, int arg2)
+{
     return 0;
 }
 ```
