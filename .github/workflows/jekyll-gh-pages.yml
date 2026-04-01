@@ -50,13 +50,13 @@ jobs:
       - name: Cache build folder
         uses: actions/cache@v4
         with:
-          path: build_wasm
-          key: build_wasm-${{ runner.os }}-${{ hashFiles('CMakeLists.txt','src/**') }}
+          path: build
+          key: build-${{ runner.os }}-${{ hashFiles('CMakeLists.txt','src/**') }}
       - name: Build game
         run: |
           source emsdk/emsdk_env.sh
-          mkdir -p build_wasm
-          cd build_wasm
+          mkdir -p build
+          cd build
           emcmake cmake ../ -B . -DCMAKE_BUILD_TYPE=Release -DCLAYBORNE_VENDORED=ON
           cmake --build . --target clayborne
           mkdir -p ../website/game

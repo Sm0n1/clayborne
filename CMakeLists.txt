@@ -26,7 +26,7 @@ target_sources(clayborne PRIVATE
     src/main.cpp
 )
 
-if (MSVC)
+if(MSVC)
     target_compile_options(clayborne PRIVATE
         /W4
         /WX
@@ -54,4 +54,13 @@ else()
         $<$<CONFIG:Debug>:-O0 -g>
         $<$<CONFIG:Release>:-O3 -DNDEBUG>
     )
+endif()
+
+if(EMSCRIPTEN)
+    set_target_properties(clayborne PROPERTIES
+        SUFFIX ".html"
+        LINK_FLAGS "-s USE_SDL=3 -s ALLOW_MEMORY_GROWTH=1"
+    )
+
+    # enable emscrypten features here
 endif()
