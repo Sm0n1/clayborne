@@ -7,15 +7,12 @@
 
 namespace clayborne {
     struct camera {
-        entt::entity entity; 
-        SDL_Texture *canvas;
-        SDL_FRect srcrect;
-        SDL_FRect dstrect;
+        entt::entity entity;
     };
 
-    std::optional<clayborne::camera> init_camera(entt::registry &registry, SDL_Renderer *renderer);
+    clayborne::camera init_camera(entt::registry &registry);
     void deinit_camera(clayborne::camera &camera, entt::registry &registry);
-    void render(const clayborne::camera &camera, const entt::registry &registry, SDL_Renderer *renderer);
+    void render(const clayborne::camera &camera, const entt::registry &registry, SDL_Renderer *renderer, SDL_Texture *canvas);
 }
 
 #endif // CLAYBORNE_CAMERA_HPP

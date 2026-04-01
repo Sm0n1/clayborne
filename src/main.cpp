@@ -10,6 +10,7 @@
 struct gamestate {
     SDL_Window *window{ nullptr };
     SDL_Renderer *renderer{ nullptr };
+    SDL_Texture *canvas{ nullptr };
     Uint64 current_time;
     Uint64 accumulated_time{ 0 };
     entt::registry registry;
@@ -44,12 +45,15 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
         return SDL_APP_FAILURE;
     }
 
-    // Initialize camera
-    if (auto camera_opt{ clayborne::init_camera(gs.registry, gs.renderer) }) {
-        gs.camera = *camera_opt;
-    } else {
+    // Initialize canvas
+    gs.canvas = SDL_CreateTexture(gs.renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 320, 180);
+    if (!gs.canvas) {
+        SDL_Log("SDL create texture failed: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+
+    // Initialize camera
+    gs.camera = clayborne::init_camera(gs.registry);
 
     // Initialize player
     gs.player = clayborne::init_player(gs.registry);
@@ -101,7 +105,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
         gs.accumulated_time -= SDL_NS_PER_SECOND / 60;
     }
 
-    clayborne::render(gs.camera, gs.registry, gs.renderer);
+    clayborne::render(gs.camera, gs.registry, gs.renderer, gs.canvas);
 
     return SDL_APP_CONTINUE;
 }
@@ -112,13 +116,9 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result) {
     clayborne::deinit_player(gs.player, gs.registry);
     clayborne::deinit_camera(gs.camera, gs.registry);
 
-    if (gs.renderer) {
-        SDL_DestroyRenderer(gs.renderer);
-    }
-
-    if (gs.window) {
-        SDL_DestroyWindow(gs.window);
-    }
+    SDL_DestroyTexture(gs.canvas);
+    SDL_DestroyRenderer(gs.renderer);
+    SDL_DestroyWindow(gs.window);
 
     switch (result) {
     case SDL_APP_SUCCESS: std::println("App Success"); break;

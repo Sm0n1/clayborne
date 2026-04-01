@@ -7,52 +7,25 @@
 
 namespace clayborne {
     // TODO: match destination rectangle with window
-    std::optional<clayborne::camera> init_camera(entt::registry &registry, SDL_Renderer *renderer) {
-        constexpr int width = 320;
-        constexpr int height = 180;
+    clayborne::camera init_camera(entt::registry &registry) {
+        clayborne::camera camera{ 
+            .entity = registry.create()
+        };
 
-        clayborne::camera camera;
-
-        // Initialize camera entity
-        camera.entity = registry.create();
         registry.emplace<clayborne::position>(camera.entity, 0.0f, 0.0f);
-
-        // Initialize canvas
-        camera.canvas = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, width, height);
-        if (!camera.canvas) {
-            SDL_Log("SDL create texture failed: %s", SDL_GetError());
-            return std::nullopt;
-        }
-
-        // Initialize source rectangle
-        camera.srcrect = SDL_FRect{
-            .x = 0.0f,
-            .y = 0.0f,
-            .w = static_cast<float>(width),
-            .h = static_cast<float>(height),
-        };
-
-        // Initialize destination rectangle
-        camera.dstrect = SDL_FRect{
-            .x = 0.0f,
-            .y = 0.0f,
-            .w = 640.0f,
-            .h = 360.0f,
-        };
 
         return camera;
     }
 
     void deinit_camera(clayborne::camera &camera, entt::registry &registry) {
-        SDL_DestroyTexture(camera.canvas);
         registry.destroy(camera.entity);
     }
 
-    void render(const clayborne::camera &camera, const entt::registry &registry, SDL_Renderer *renderer) {
+    void render(const clayborne::camera &camera, const entt::registry &registry, SDL_Renderer *renderer, SDL_Texture *canvas) {
         // Clear last frame
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
-        SDL_SetRenderTarget(renderer, camera.canvas);
+        SDL_SetRenderTarget(renderer, canvas);
         SDL_RenderClear(renderer);
 
         // Draw camera view
@@ -71,7 +44,7 @@ namespace clayborne {
 
         // Render camera view
         SDL_SetRenderTarget(renderer, nullptr);
-        SDL_RenderTexture(renderer, camera.canvas, &camera.srcrect, &camera.dstrect);
+        SDL_RenderTexture(renderer, canvas, nullptr, nullptr);
         SDL_RenderPresent(renderer);
     }
 }
