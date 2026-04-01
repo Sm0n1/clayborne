@@ -59,10 +59,9 @@ jobs:
           cd build
           emcmake cmake ../ -B . -DCMAKE_BUILD_TYPE=Release -DCLAYBORNE_VENDORED=ON
           cmake --build . --target clayborne
-          mkdir -p ../website/game
-          cp clayborne.html ../website/game/index.html
-          cp *.js ../website/game/ || echo "no JS generated"
-          cp *.wasm ../website/game/ || echo "no WASM generated"
+          mkdir -p website/game
+          cp build/clayborne.js website/game/
+          cp build/clayborne.wasm website/game/
           cd ..
 
       - name: Setup Pages
