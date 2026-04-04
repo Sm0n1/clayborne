@@ -1,7 +1,6 @@
 #ifndef CLAYBORNE_CAMERA_HPP
 #define CLAYBORNE_CAMERA_HPP
 
-#include <expected>
 #include <SDL3/SDL.h>
 #include <entt/entt.hpp>
 

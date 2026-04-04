@@ -1,9 +1,7 @@
-#include <optional>
 #include <SDL3/SDL.h>
 #include <entt/entt.hpp>
 #include "camera.hpp"
 #include "physics.hpp"
-#include <print>
 
 namespace clayborne {
     // TODO: match destination rectangle with window
