@@ -1,7 +1,7 @@
 #ifndef CLAYBORNE_INPUT_HPP
 #define CLAYBORNE_INPUT_HPP
 
-#include <array>
+
 #include <cstdint>
 #include <unordered_map>
 #include <SDL3/SDL.h>
