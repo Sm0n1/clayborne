@@ -1,6 +1,9 @@
 #ifndef CLAYBORNE_PHYSICS_HPP
 #define CLAYBORNE_PHYSICS_HPP
 
+#include <SDL3/SDL.h>
+#include <entt/entt.hpp>
+
 namespace clayborne {
     struct position {
         float x;
@@ -17,7 +20,7 @@ namespace clayborne {
         float h;
     };
 
-    void update_physics(entt::registry &registry);
+    void update_physics(entt::registry &registry, Uint64 dt_ns);
 }
 
 #endif // CLAYBORNE_PHYSICS_HPP

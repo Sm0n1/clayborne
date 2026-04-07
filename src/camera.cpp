@@ -1,4 +1,7 @@
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_oldnames.h>
+#include <SDL3/SDL_render.h>
+#include <cstdio>
 #include <entt/entt.hpp>
 #include "camera.hpp"
 #include "physics.hpp"
@@ -28,16 +31,21 @@ namespace clayborne {
 
         // Draw camera view
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        auto &cpos = registry.get<const clayborne::position>(camera.entity);
-        auto view = registry.view<const clayborne::position, const clayborne::collider>();
-        for (auto [entity, pos, col]: view.each()) {
-            const SDL_FRect rect{
-                .x = pos.x - cpos.x, // camera relative
-                .y = pos.y - cpos.y, // camera relative
-                .w = col.w,
-                .h = col.h
+        auto &camera_position = registry.get<const clayborne::position>(camera.entity);
+        auto view = registry.view<const clayborne::position, const clayborne::renderer>();
+        for (auto [entity, position, renderable]: view.each()) {
+            const SDL_FRect dstrect{
+                .x = renderable.dstrect.x + position.x - camera_position.x,
+                .y = renderable.dstrect.y + position.y - camera_position.y,
+                .w = renderable.dstrect.w,
+                .h = renderable.dstrect.h,
             };
-            SDL_RenderFillRect(renderer, &rect);
+            if (renderable.texture) {
+                SDL_RenderTexture(renderer, renderable.texture, &renderable.srcrect, &dstrect);
+            }
+            else {
+                SDL_RenderFillRect(renderer, &dstrect);
+            }
         }
 
         // Render camera view

@@ -2,11 +2,19 @@
 #define CLAYBORNE_CAMERA_HPP
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_rect.h>
+#include <SDL3/SDL_render.h>
 #include <entt/entt.hpp>
 
 namespace clayborne {
     struct camera {
         entt::entity entity;
+    };
+
+    struct renderer {
+        SDL_Texture *texture;
+        SDL_FRect srcrect;
+        SDL_FRect dstrect;
     };
 
     clayborne::camera init_camera(entt::registry &registry);

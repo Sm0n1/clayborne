@@ -1,15 +1,18 @@
 #include "SDL3/SDL_events.h"
+#include <SDL3/SDL_scancode.h>
+#include <cstdio>
 #define SDL_MAIN_USE_CALLBACKS
 
 #include <utility>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL.h>
 #include <entt/entt.hpp>
-#include <print>
-#include "engine/input.hpp"
+// #include <print>
+#include "engine/input/manager.hpp"
 #include "camera.hpp"
 #include "player.hpp"
 #include "physics.hpp"
+#include "engine/time.hpp"
 
 struct gamestate {
     SDL_Window *window{ nullptr };
@@ -22,7 +25,7 @@ struct gamestate {
     clayborne::camera camera;
     bool is_fullscreen{ false };
 
-    clayborne::input::manager input_manager;
+    clayborne::input::manager inputs;
 };
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
@@ -72,7 +75,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     gs.current_time = SDL_GetTicksNS();
 
     // Initialize input manager
-    gs.input_manager = clayborne::input::manager::init();
+    gs.inputs = {};
 
     return SDL_APP_CONTINUE;
 }
@@ -90,14 +93,39 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
             gs.is_fullscreen = !gs.is_fullscreen;
             SDL_SetWindowFullscreen(gs.window, gs.is_fullscreen);
             break;
+        // ------------------------ //
+        // Temporary Input Handling //
+        // ------------------------ //
+        case SDL_SCANCODE_J: gs.player.jump = clayborne::player::button::just_pressed; break;
+        case SDL_SCANCODE_K: gs.player.head = clayborne::player::button::just_pressed; break;
+        case SDL_SCANCODE_W: gs.player.up = true; break;
+        case SDL_SCANCODE_A: gs.player.left = true; break;
+        case SDL_SCANCODE_S: gs.player.down = true; break;
+        case SDL_SCANCODE_D: gs.player.right = true; break;
+        // ------------------------ //
         default:
             break;
         }
         break;
+    case SDL_EVENT_KEY_UP:
+        // ------------------------ //
+        // Temporary Input Handling //
+        // ------------------------ //
+        switch (event->key.scancode) {
+        case SDL_SCANCODE_J: gs.player.jump = clayborne::player::button::just_released; break;
+        case SDL_SCANCODE_K: gs.player.head = clayborne::player::button::just_released; break;
+        case SDL_SCANCODE_W: gs.player.up = false; break;
+        case SDL_SCANCODE_A: gs.player.left = false; break;
+        case SDL_SCANCODE_S: gs.player.down = false; break;
+        case SDL_SCANCODE_D: gs.player.right = false; break;
+        default: break;
+        }
+        break;
+        // ------------------------ //
     // case SDL_EVENT_GAMEPAD_ADDED:
     // case SDL_EVENT_GAMEPAD_REMOVED:
     default:
-        clayborne::input::manager::handle_event(gs.input_manager, event);
+        // gs.inputs.process_event(*event);
         break;
     }
 
@@ -112,8 +140,8 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     gs.accumulated_time += frame_time;
 
     while (gs.accumulated_time >= SDL_NS_PER_SECOND / 60) {
-        clayborne::update_player(gs.player, gs.registry, gs.input_manager.gameplay);
-        clayborne::update_physics(gs.registry);
+        clayborne::update_player(gs.player, gs.registry, gs.inputs, SDL_NS_PER_SECOND / 60);
+        clayborne::update_physics(gs.registry, SDL_NS_PER_SECOND / 60);
         gs.accumulated_time -= SDL_NS_PER_SECOND / 60;
     }
 
@@ -133,8 +161,10 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result) {
     SDL_DestroyWindow(gs.window);
 
     switch (result) {
-    case SDL_APP_SUCCESS: std::println("App Success"); break;
-    case SDL_APP_FAILURE: std::println("App Failure"); break;
-    case SDL_APP_CONTINUE: std::unreachable();
+    // case SDL_APP_SUCCESS: std::println("App Success"); break;
+    // case SDL_APP_FAILURE: std::println("App Failure"); break;
+    // case SDL_APP_CONTINUE: std::unreachable();
+    default:
+        break;
     }
 }
