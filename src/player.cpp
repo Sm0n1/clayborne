@@ -17,29 +17,77 @@
 }
 
 namespace clayborne {
-    player init_player(entt::registry &registry) {
-        player player{};
+    static void player_collision_handler(entt::registry &registry, const collider::collision &collision) {
+        auto &player{ registry.get<clayborne::player>(collision.self) };
+        auto &position{ registry.get<clayborne::position>(collision.self) };
+        auto &velocity{ registry.get<clayborne::velocity>(collision.self) };
+        const auto &collider{ registry.get<clayborne::collider>(collision.self) };
 
-        player.entity = registry.create();
-        registry.emplace<position>(player.entity, 0.0f, 0.0f);
-        registry.emplace<velocity>(player.entity, 0.0f, 0.0f);
-        registry.emplace<collider>(player.entity, 8.0f, 11.0f);
-        registry.emplace<renderer>(player.entity, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 8.0f, .h = 11.0f });
+        // --------------------- //
+        // Horizontal Collisions //
+        // --------------------- //
 
-        // TODO: remove
-        auto ground{ registry.create() };
-        registry.emplace<position>(ground, 0.0f, 160.0f);
-        registry.emplace<collider>(ground, 320.0f, 20.0f);
-        registry.emplace<renderer>(ground, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 320.0f, .h = 20.0f });
+        if (collision.normal_x != 0.0f) {
+            if (player.wall_speed_retention_timer <= 0) {
+                player.wall_speed_retention = velocity.x;
+                player.wall_speed_retention_timer = player::wall_speed_retention_time;
+            }
 
-        return player;
+            velocity.x = 0;
+
+            return;
+        }
+
+        // ------------------- //
+        // Vertical Collisions //
+        // ------------------- //
+
+        // TODO: head landing on body should reattach it
+
+        if (velocity.y < 0.0f) {
+            if (velocity.x <= 0.0f) {
+                for (int i{ 1 }; i <= player::ceiling_corner_correction; i += 1) {
+                    auto new_position{ position };
+                    new_position.x -= static_cast<float>(i);
+                    if (!overlap_any(registry, collision.self, new_position, collider)) {
+                        position = new_position;
+                        return;
+                    }
+                }
+            }
+
+            if (velocity.x >= 0.0f) {
+                for (int i{ 1 }; i <= player::ceiling_corner_correction; i += 1) {
+                    auto new_position{ position };
+                    new_position.x += static_cast<float>(i);
+                    if (!overlap_any(registry, collision.self, new_position, collider)) {
+                        position = new_position;
+                        return;
+                    }
+                }
+            }
+                
+            if (player.jump_boost_timer < player::jump_boost_time - player::ceiling_jump_boost_grace) {
+                player.jump_boost_timer = 0.0f;
+            }
+        }
+
+        velocity.y = 0.0f;
     }
 
-    void deinit_player(player &player, entt::registry &registry) {
-        registry.destroy(player.entity);
+    entt::entity init_player(entt::registry &registry, float x, float y) noexcept {
+        auto player_entity{ registry.create() };
+
+        registry.emplace<player>(player_entity);
+        registry.emplace<position>(player_entity, x, y);
+        registry.emplace<velocity>(player_entity, 0.0f, 0.0f);
+        registry.emplace<collider>(player_entity, 8.0f, 11.0f, player_collision_handler);
+        registry.emplace<renderer>(player_entity, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 8.0f, .h = 11.0f });
+
+        return player_entity;
     }
 
-    void update_player(player &player, entt::registry &registry, const input::manager &inputs, Uint64 dt_ns) {
+    void update_player(entt::entity player_entity, entt::registry &registry, const input::manager &inputs, Uint64 dt_ns) noexcept {
         const float delta_time{ static_cast<float>(static_cast<double>(dt_ns) / SDL_NS_PER_SECOND) };
 
         for (auto event : inputs.get_events()) {
@@ -47,9 +95,10 @@ namespace clayborne {
             (void)event;
         }
 
-        auto &velocity{ registry.get<clayborne::velocity>(player.entity) };
-        auto &position{ registry.get<clayborne::position>(player.entity) };
-        auto &collider{ registry.get<clayborne::collider>(player.entity) };
+        auto &player{ registry.get<clayborne::player>(player_entity)};
+        auto &velocity{ registry.get<clayborne::velocity>(player_entity) };
+        auto &position{ registry.get<clayborne::position>(player_entity) };
+        auto &collider{ registry.get<clayborne::collider>(player_entity) };
 
         // Check if grounded
         player.is_grounded = false;
@@ -59,7 +108,7 @@ namespace clayborne {
 
             auto view{ registry.view<const clayborne::position, const clayborne::collider>() };
             for (auto [e, p, c] : view.each()) {
-                if (player.entity == e) {
+                if (player_entity == e) {
                     continue;
                 }
                 
@@ -70,13 +119,13 @@ namespace clayborne {
             }
         }
 
-        // No idea
-        // if (player.is_grounded) {
-        //     highestAirY = Y;
-        // }
-        // else {
-        //     highestAirY = Math.Min(Y, highestAirY);
-        // }
+        // Update jump buffer timer
+        if (player.jump_just_pressed) {
+            player.jump_buffer_timer = player::jump_buffer_time;
+        }
+        if (player.jump_buffer_timer > 0.0f) {
+            player.jump_buffer_timer -= delta_time;
+        }
 
         // Update jump grace timer
         if (player.is_grounded) {
@@ -86,7 +135,8 @@ namespace clayborne {
             player.jump_grace_timer -= delta_time;
         }
 
-        if (player.jump_boost_timer > 0) {
+        // Update jump boost timer
+        if (player.jump_boost_timer > 0.0f) {
             player.jump_boost_timer -= delta_time;
         }
                     
@@ -98,18 +148,35 @@ namespace clayborne {
             player.facing = player::facing::left;
         }
 
-        // if (player.wall_speed_retention_timer > 0) {
-        //     if (velocity.x * player.wall_speed_retention < 0.0f) {
-        //         player.wall_speed_retention_timer = 0;
-        //     }
-        //     else if (!CollideCheck<Solid>(Position + Vector2.UnitX * Math.Sign(wallSpeedRetained))) {
-        //         velocity.x = player.wall_speed_retention;
-        //         player.wall_speed_retention_timer = 0;
-        //     }
-        //     else {
-        //         player.wall_speed_retention_timer -= dt_ns;
-        //     }
-        // }
+        // Moving into a wall retains speed for a short duration
+        if (player.wall_speed_retention_timer > 0.0f) {
+            if (velocity.x * player.wall_speed_retention < 0.0f) {
+                player.wall_speed_retention_timer = 0.0f;
+            }
+            else {
+                auto p{ position };
+                p.x += static_cast<float>(player.wall_speed_retention > 0.0f) + static_cast<float>(player.wall_speed_retention < 0.0f);
+                
+                bool is_wall{ false };
+
+                auto view{ registry.view<const clayborne::position, const clayborne::collider>() };
+                for (auto [e2, p2, c2] : view.each()) {
+                    (void)e2;
+                    if (overlap(position, collider, p2, c2)) {
+                        is_wall = true;
+                        break;
+                    }
+                }
+
+                if (!is_wall) {
+                    velocity.x = player.wall_speed_retention;
+                    player.wall_speed_retention_timer = 0.0f;
+                }
+                else {
+                    player.wall_speed_retention_timer -= delta_time;
+                }
+            }
+        }
 
         // ------------------- //
         // Horizontal Movement //
@@ -147,17 +214,22 @@ namespace clayborne {
             }
         }
 
-        // Jumping is allowed some time after beginning to fall
-        // TODO: add jump buffer
-        if (player.jump_just_pressed && player.jump_grace_timer > 0.0f) {
-            // TODO: consume jump buffer here!
-            player.jump_grace_timer = 0;
+        bool is_buffered_jump{ player.jump_pressed && player.is_grounded && player.jump_buffer_timer > 0.0f };
+        bool is_coyote_jump{ player.jump_just_pressed && player.jump_grace_timer > 0.0f };
+        if (is_buffered_jump || is_coyote_jump) {
+            player.jump_buffer_timer = 0.0f;
+            player.jump_grace_timer = 0.0f;
             player.jump_boost_timer = player::jump_boost_time;
 
-            velocity.x += player::jump_horizontal_boost * move_input;
-            velocity.y = player::jump_speed;
+            velocity.x += player::jump_horizontal_speed * move_input;
+            velocity.y = player::jump_vertical_speed;
             // jump pad boost goes here
             player.jump_boost_speed = velocity.y;
+        }
+
+        // Reset jump buffer timer on ground
+        if (player.is_grounded) {
+            player.jump_buffer_timer = 0.0f;
         }
 
         // ------------------------ //
@@ -167,13 +239,4 @@ namespace clayborne {
         player.head_just_pressed = false;
         // ------------------------ //
     }
-
-    // void on_collide_horizontal(player &player, void *collision_data) {
-    //     (void)player;
-    //     (void)collision_data;
-    //     if (player.wall_speed_retention_timer <= 0) {
-    //         player.wall_speed_retention = velocity.x;
-    //         player.wall_speed_retention_timer = player::wall_speed_retention_time;
-    //     }
-    // }
 }

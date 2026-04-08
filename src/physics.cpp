@@ -2,11 +2,14 @@
 #include <SDL3/SDL_timer.h>
 #include <cmath>
 #include <cstdio>
+// #include <chrono>
 #include <entt/entt.hpp>
 #include "physics.hpp"
 
 namespace clayborne {
     void update_physics(entt::registry &registry, Uint64 dt_ns) {
+        // const auto start = std::chrono::steady_clock::now();
+
         float delta_time{ static_cast<float>(static_cast<double>(dt_ns) / SDL_NS_PER_SECOND )};
 
         // Move entities that cannot collide
@@ -18,79 +21,101 @@ namespace clayborne {
         
         // Move entities that may collide
         auto collidable_view{ registry.view<position, velocity, const collider>() };
-        for (auto [entity, pos, vel, col]: collidable_view.each()) {
-            vel.x_subpos += vel.x * delta_time;
-            vel.y_subpos += vel.y * delta_time;
+        for (auto [self, self_position, self_velocity, self_collider]: collidable_view.each()) {
+            self_velocity.x_subpos += self_velocity.x * delta_time;
+            self_velocity.y_subpos += self_velocity.y * delta_time;
 
-            auto x_move{ std::round(vel.x_subpos) };
-            auto y_move{ std::round(vel.y_subpos) };
+            auto x_move{ std::round(self_velocity.x_subpos) };
+            auto y_move{ std::round(self_velocity.y_subpos) };
             auto x_sgn{ static_cast<float>(x_move > 0.0f) - static_cast<float>(x_move < 0.0f) };
             auto y_sgn{ static_cast<float>(y_move > 0.0f) - static_cast<float>(y_move < 0.0f) };
 
-            vel.x_subpos -= x_move;
-            vel.y_subpos -= y_move;
-
-            printf("%f\n", static_cast<double>(x_move));
+            self_velocity.x_subpos -= x_move;
+            self_velocity.y_subpos -= y_move;
 
             // Move one pixel at a time in the x axis
             while (x_move != 0) {
                 x_move -= x_sgn;
-                pos.x += x_sgn;
+                self_position.x += x_sgn;
 
                 bool is_collision = false;
                 auto view{ registry.view<const position, const collider>() };
-                for (auto [other, p2, c2]: view.each()) {
-                    if (entity == other) {
+                for (auto [other, other_position, other_collider]: view.each()) {
+                    if (self == other) {
                         continue;
                     }
 
-                    if (overlap(pos, col, p2, c2)) {
+                    if (overlap(self_position, self_collider, other_position, other_collider)) {
                         is_collision = true;
-                        if (col.handler) {
-                            col.handler.value()(other, true, false);
+                        if (self_collider.collide) {
+                            self_collider.collide.value()(registry, {self, other, -x_sgn, 0.0f});
                         }
-                        if (c2.handler) {
-                            c2.handler.value()(entity, true, false);
+                        if (other_collider.collide) {
+                            other_collider.collide.value()(registry, {other, self, x_sgn, 0.0f});
                         }
                     }
                 }
 
-                // Undo move if it caused a collision 
+                // Undo move if it caused a collision
                 if (is_collision) {
-                    pos.x -= x_sgn; // undo move
+                    self_position.x -= x_sgn; // undo move
                     break;
                 }
             }
 
-            // Move one pixel at a time in the x axis
+            // Move one pixel at a time in the y axis
             while (y_move != 0) {
                 y_move -= y_sgn;
-                pos.y += y_sgn;
+                self_position.y += y_sgn;
 
                 bool is_collision = false;
                 auto view{ registry.view<const position, const collider>() };
-                for (auto [other, p2, c2]: view.each()) {
-                    if (entity == other) {
+                for (auto [other, other_position, other_collider]: view.each()) {
+                    if (self == other) {
                         continue;
                     }
                     
-                    if (overlap(pos, col, p2, c2)) {
+                    if (overlap(self_position, self_collider, other_position, other_collider)) {
                         is_collision = true;
-                        if (col.handler) {
-                            col.handler.value()(other, false, true);
+                        if (self_collider.collide) {
+                            self_collider.collide.value()(registry, {self,  other, 0.0f, -y_sgn });
                         }
-                        if (c2.handler) {
-                            c2.handler.value()(entity, false, true);
+                        if (other_collider.collide) {
+                            other_collider.collide.value()(registry, {other, self, 0.0f, y_sgn });
                         }
                     }
                 }
 
                 // Undo move if it caused a collision 
                 if (is_collision) {
-                    pos.y -= y_sgn; // undo move
+                    self_position.y -= y_sgn; // undo move
                     break;
                 }
             }
         }
+
+        // const auto end = std::chrono::steady_clock::now();
+        // const auto total_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+        // const auto percent_of_frame{ (static_cast<double>(total_ns) / (SDL_NS_PER_SECOND / 60.0)) * 100.0 };
+        // printf("physics_time: %.2f%% of 60 FPS frame\n", percent_of_frame);
+    }
+
+    [[nodiscard]] bool overlap_any(
+        const entt::registry &registry,
+        const entt::entity self,
+        const position &self_position,
+        const collider &self_collider
+    ) noexcept {
+        auto view{ registry.view<const clayborne::position, const clayborne::collider>() };
+        for (auto [other, other_position, other_collider]: view.each()) {
+            if (self == other) {
+                continue;
+            }
+
+            if (overlap(self_position, self_collider, other_position, other_collider)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

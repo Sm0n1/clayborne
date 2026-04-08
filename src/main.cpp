@@ -22,7 +22,7 @@ struct gamestate {
     Uint64 current_time;
     Uint64 accumulated_time{ 0 };
     entt::registry registry;
-    clayborne::player player;
+    entt::entity player;
     clayborne::camera camera;
     bool is_fullscreen{ false };
 
@@ -74,7 +74,45 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     gs.camera = clayborne::init_camera(gs.registry);
 
     // Initialize player
-    gs.player = clayborne::init_player(gs.registry);
+    gs.player = clayborne::init_player(gs.registry, 160.0f, 90.0f);
+
+    // Initialize play area
+    auto floor{ gs.registry.create() };
+    gs.registry.emplace<clayborne::position>(floor, 0.0f, 160.0f);
+    gs.registry.emplace<clayborne::collider>(floor, 320.0f, 20.0f);
+    gs.registry.emplace<clayborne::renderer>(floor, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 320.0f, .h = 20.0f });
+    auto ceiling{ gs.registry.create() };
+    gs.registry.emplace<clayborne::position>(ceiling, 0.0f, 0.0f);
+    gs.registry.emplace<clayborne::collider>(ceiling, 320.0f, 16.0f);
+    gs.registry.emplace<clayborne::renderer>(ceiling, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 320.0f, .h = 16.0f });
+    auto left_wall{ gs.registry.create() };
+    gs.registry.emplace<clayborne::position>(left_wall, 0.0f, 0.0f);
+    gs.registry.emplace<clayborne::collider>(left_wall, 16.0f, 180.0f);
+    gs.registry.emplace<clayborne::renderer>(left_wall, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 16.0f, .h = 180.0f });
+    auto right_wall{ gs.registry.create() };
+    gs.registry.emplace<clayborne::position>(right_wall, 304.0f, 0.0f);
+    gs.registry.emplace<clayborne::collider>(right_wall, 16.0f, 180.0f);
+    gs.registry.emplace<clayborne::renderer>(right_wall, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 16.0f, .h = 180.0f });
+    auto p1{ gs.registry.create() };
+    gs.registry.emplace<clayborne::position>(p1, 32.0f, 128.0f);
+    gs.registry.emplace<clayborne::collider>(p1, 32.0f, 32.0f);
+    gs.registry.emplace<clayborne::renderer>(p1, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 32.0f, .h = 32.0f });
+    auto p2{ gs.registry.create() };
+    gs.registry.emplace<clayborne::position>(p2, 96.0f, 96.0f);
+    gs.registry.emplace<clayborne::collider>(p2, 8.0f, 32.0f);
+    gs.registry.emplace<clayborne::renderer>(p2, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 8.0f, .h = 32.0f });
+    auto p3{ gs.registry.create() };
+    gs.registry.emplace<clayborne::position>(p3, 152.0f, 112.0f);
+    gs.registry.emplace<clayborne::collider>(p3, 8.0f, 32.0f);
+    gs.registry.emplace<clayborne::renderer>(p3, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 8.0f, .h = 32.0f });
+    auto p4{ gs.registry.create() };
+    gs.registry.emplace<clayborne::position>(p4, 160.0f, 136.0f);
+    gs.registry.emplace<clayborne::collider>(p4, 32.0f, 8.0f);
+    gs.registry.emplace<clayborne::renderer>(p4, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 32.0f, .h = 8.0f });
+    auto p5{ gs.registry.create() };
+    gs.registry.emplace<clayborne::position>(p5,240.0f, 120.0f);
+    gs.registry.emplace<clayborne::collider>(p5, 32.0f, 32.0f);
+    gs.registry.emplace<clayborne::renderer>(p5, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 32.0f, .h = 32.0f });
 
     // Initialize timer
     gs.current_time = SDL_GetTicksNS();
@@ -87,12 +125,16 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
 
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
     auto &gs{ *static_cast<gamestate*>(appstate) };
+    clayborne::player &player{ gs.registry.get<clayborne::player>(gs.player) };
 
     switch (event->type) {
     case SDL_EVENT_QUIT: [[fallthrough]];
     case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
         return SDL_APP_SUCCESS;
     case SDL_EVENT_KEY_DOWN:
+        if (event->key.repeat) {
+            break;
+        }
         switch (event->key.scancode) {
         case SDL_SCANCODE_F11:
             gs.is_fullscreen = !gs.is_fullscreen;
@@ -101,12 +143,12 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
         // ------------------------ //
         // Temporary Input Handling //
         // ------------------------ //
-        case SDL_SCANCODE_J: gs.player.jump_just_pressed = true; gs.player.jump_pressed = true; break;
-        case SDL_SCANCODE_K: gs.player.head_just_pressed = true; break;
-        case SDL_SCANCODE_W: gs.player.up = true; break;
-        case SDL_SCANCODE_A: gs.player.left = true; break;
-        case SDL_SCANCODE_S: gs.player.down = true; break;
-        case SDL_SCANCODE_D: gs.player.right = true; break;
+        case SDL_SCANCODE_J: player.jump_just_pressed = true; player.jump_pressed = true; break;
+        case SDL_SCANCODE_K: player.head_just_pressed = true; break;
+        case SDL_SCANCODE_W: player.up = true; break;
+        case SDL_SCANCODE_A: player.left = true; break;
+        case SDL_SCANCODE_S: player.down = true; break;
+        case SDL_SCANCODE_D: player.right = true; break;
         // ------------------------ //
         default:
             break;
@@ -117,11 +159,11 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
         // Temporary Input Handling //
         // ------------------------ //
         switch (event->key.scancode) {
-        case SDL_SCANCODE_J: gs.player.jump_pressed = false; break;
-        case SDL_SCANCODE_W: gs.player.up = false; break;
-        case SDL_SCANCODE_A: gs.player.left = false; break;
-        case SDL_SCANCODE_S: gs.player.down = false; break;
-        case SDL_SCANCODE_D: gs.player.right = false; break;
+        case SDL_SCANCODE_J: player.jump_pressed = false; break;
+        case SDL_SCANCODE_W: player.up = false; break;
+        case SDL_SCANCODE_A: player.left = false; break;
+        case SDL_SCANCODE_S: player.down = false; break;
+        case SDL_SCANCODE_D: player.right = false; break;
         default: break;
         }
         break;
@@ -157,7 +199,6 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 void SDL_AppQuit(void *appstate, SDL_AppResult result) {
     auto &gs{ *static_cast<gamestate*>(appstate) };
 
-    clayborne::deinit_player(gs.player, gs.registry);
     clayborne::deinit_camera(gs.camera, gs.registry);
 
     SDL_DestroyTexture(gs.canvas);

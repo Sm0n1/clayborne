@@ -77,30 +77,55 @@ namespace clayborne {
     };
 
     struct position {
-        float x;
-        float y;
+        float x{ 0.0f };
+        float y{ 0.0f };
     };
 
     struct velocity {
-        float x;
-        float y;
-        float x_subpos;
-        float y_subpos;
+        float x{ 0.0f };
+        float y{ 0.0f };
+        float x_subpos{ 0.0f };
+        float y_subpos{ 0.0f };
     };
 
     struct collider {
-        float w;
-        float h;
+        float w{ 0.0f };
+        float h{ 0.0f };
+
+        struct collision {
+            entt::entity self{ entt::null };
+            entt::entity other{ entt::null };
+            float normal_x{ 0.0f };
+            float normal_y{ 0.0f };
+        };
 
         // TODO: make an actual collision handler
-        std::optional<std::function<void (entt::entity entity, bool x, bool y)>> handler{ std::nullopt };
+        std::optional<std::function<void (entt::registry &, const collision &)>> collide{ std::nullopt };
     };
 
+    // Important: if an entity moves, then its collision handler will be called at the point of
+    //            intersection, only being moved back after all collisions are handled.
     void update_physics(entt::registry &registry, Uint64 dt_ns);
 
-    [[nodiscard]] constexpr bool overlap(const position &p1, const collider &c1, const position &p2, const collider &c2) noexcept {
-        return (p1.x + c1.w > p2.x) & (p1.y + c1.h > p2.y) & (p2.x + c2.w > p1.x) & (p2.y + c2.h > p1.y ); // eager evaluation
+    [[nodiscard]] constexpr bool overlap(
+        const position &position_1,
+        const collider &collider_1,
+        const position &position_2,
+        const collider &collider_2
+    ) noexcept {
+        return 
+            (position_1.x + collider_1.w > position_2.x) && 
+            (position_1.y + collider_1.h > position_2.y) && 
+            (position_2.x + collider_2.w > position_1.x) && 
+            (position_2.y + collider_2.h > position_1.y );
     }
+
+    [[nodiscard]] bool overlap_any(
+        const entt::registry &registry,
+        const entt::entity self,
+        const position &self_position,
+        const collider &self_collider
+    ) noexcept;
 }
 
 #endif // CLAYBORNE_PHYSICS_HPP

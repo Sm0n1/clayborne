@@ -32,8 +32,9 @@ namespace clayborne {
         static constexpr float run_deceleration{ 400.0f };
         static constexpr float air_multiplier{ 0.65f };
 
-        static constexpr float jump_speed{ -150.0f };
-        static constexpr float jump_horizontal_boost{ 40.0f };
+        static constexpr float jump_vertical_speed{ -150.0f };
+        static constexpr float jump_horizontal_speed{ 40.0f };
+        static constexpr float jump_buffer_time{ 0.08f };
         static constexpr float jump_grace_time{ 0.1f };
         static constexpr float jump_boost_time{ 0.2f };
 
@@ -42,25 +43,29 @@ namespace clayborne {
         static constexpr float half_gravity_threshold{ 40.0f };
 
         static constexpr float wall_speed_retention_time{ 0.6f };
+        static constexpr float ceiling_jump_boost_grace{ 0.5f };
+        static constexpr int ceiling_corner_correction{ 4 };
 
         bool is_grounded{ true };
         facing facing{ facing::right };
 
+        // Allows buffering a jump to trigger when landing.
+        float jump_buffer_timer{ 0.0f };
+
         // Allows jumping a few moments after beginning to fall.
         float jump_grace_timer{ 0.0f };
 
+        // Allows holding the jump button to gain increased height.
         float jump_boost_timer{ 0.0f };
         float jump_boost_speed{ 0.0f };
 
+        // Moving into a wall retains the momentum for a short duration.
         float wall_speed_retention_timer{ 0.0f };
         float wall_speed_retention{ 0.0f };
-
-        entt::entity entity{ entt::null };
     };
 
-    player init_player(entt::registry &registry);
-    void deinit_player(player &player, entt::registry &registry);
-    void update_player(player &player, entt::registry &registry, const input::manager &inputs, const Uint64 dt_ns);
+    entt::entity init_player(entt::registry &registry, float x, float y) noexcept;
+    void update_player(entt::entity player_entity, entt::registry &registry, const input::manager &inputs, Uint64 dt_ns) noexcept;
 }
 
 #endif // CLAYBORNE_PLAYER_HPP
