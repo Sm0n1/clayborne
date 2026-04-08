@@ -22,7 +22,12 @@
 //     If this is not possible, then the head should not be thrown.
 //
 // Edge case 3:
+//     If there is clay in a one-block tall corridor, then the head should not be able to
+//     regrow in order to not trap the player within the ceiling.
+//
+// Edge case 4:
 //     ...
+//
 //
 //
 
@@ -93,6 +98,7 @@ namespace clayborne {
         static constexpr float hitbox_width{ 8.0f };
         static constexpr float hitbox_height{ 8.0f };
         static constexpr float throw_speed{ 300.0f };
+        static constexpr float friction{ 1000.0f };
         static constexpr float gravity{ player::gravity };
         static constexpr float fall_speed{ player::fall_speed };
 

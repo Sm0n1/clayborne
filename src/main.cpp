@@ -1,4 +1,5 @@
 #include "SDL3/SDL_events.h"
+#include "clay.hpp"
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_surface.h>
@@ -81,6 +82,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     gs.registry.emplace<clayborne::position>(floor, 0.0f, 160.0f);
     gs.registry.emplace<clayborne::collider>(floor, 320.0f, 20.0f);
     gs.registry.emplace<clayborne::renderer>(floor, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 320.0f, .h = 20.0f });
+    gs.registry.emplace<clayborne::clay>(floor);
     auto ceiling{ gs.registry.create() };
     gs.registry.emplace<clayborne::position>(ceiling, 0.0f, 0.0f);
     gs.registry.emplace<clayborne::collider>(ceiling, 320.0f, 16.0f);

@@ -89,6 +89,17 @@ namespace clayborne {
         velocity.y = 0.0f;
     }
 
+    static void head_collision_handler(entt::registry &registry, const collider::collision &collision) {
+        auto &velocity{ registry.get<clayborne::velocity>(collision.self) };
+
+        if (collision.normal_x != 0.0f) {
+            velocity.x = 0.0f;
+        }
+        else if (collision.normal_y != 0.0f) {
+            velocity.y = 0.0f;
+        }
+    }
+
     entt::entity init_player(entt::registry &registry, float x, float y) noexcept {
         auto player_entity{ registry.create() };
 
@@ -130,17 +141,6 @@ namespace clayborne {
             if (overlap_any(registry, player_entity, below, collider)) {
                 player.is_grounded = true;
             }
-            // auto view{ registry.view<const clayborne::position, const clayborne::collider>() };
-            // for (auto [e, p, c] : view.each()) {
-            //     if (player_entity == e) {
-            //         continue;
-            //     }
-                
-            //     if (clayborne::overlap(below, collider, p, c)) {
-            //         player.is_grounded = true;
-            //         break;
-            //     }
-            // }
         }
 
         // Update jump buffer timer
@@ -182,15 +182,6 @@ namespace clayborne {
                 p.x += static_cast<float>(player.wall_speed_retention > 0.0f) + static_cast<float>(player.wall_speed_retention < 0.0f);
                 
                 bool is_wall{ overlap_any(registry, player_entity, p, collider) };
-                // auto view{ registry.view<const clayborne::position, const clayborne::collider>() };
-                // for (auto [e2, p2, c2] : view.each()) {
-                //     (void)e2;
-                //     if (overlap(position, collider, p2, c2)) {
-                //         is_wall = true;
-                //         break;
-                //     }
-                // }
-
                 if (!is_wall) {
                     velocity.x = player.wall_speed_retention;
                     player.wall_speed_retention_timer = 0.0f;
@@ -262,7 +253,6 @@ namespace clayborne {
         if (player.head_just_pressed) {
             // Throw head
             if (player.is_head_attached) {
-                printf("throw\n");
                 // Update player shape
                 position.y += player::hitbox_height - player::headless_hitbox_height;
                 collider.h = player::headless_hitbox_height;
@@ -278,24 +268,28 @@ namespace clayborne {
 
                 auto &head_position{ registry.emplace<clayborne::position>(player.head) };
                 head_position = position;
-                head_position.x += x * player::hitbox_width;
-                head_position.y += y * player::headless_hitbox_height;
                 
                 auto &head_velocity{ registry.emplace<clayborne::velocity>(player.head) };
                 if (len2 == 0.0f) {
                     const int direction{ (player.facing == player::facing::right) - (player.facing == player::facing::left) };
                     head_velocity.x = static_cast<float>(direction) * head::throw_speed;
                     head_velocity.y = 0.0f;
+                    head_position.x += static_cast<float>(direction) * player::hitbox_width;
+                    printf("throw (facing): %f\n", static_cast<double>(direction));
                 }
                 else {
                     const float invlen{ (len2 == 2.0f) ? 0.70710678f : 1 };
                     head_velocity.x = x * invlen * head::throw_speed;
                     head_velocity.y = y * invlen * head::throw_speed;
+                    head_position.x += x * player::hitbox_width;
+                    head_position.y += y * player::headless_hitbox_height;
+                    printf("throw (aim): %f, %f\n", static_cast<double>(x), static_cast<double>(y));
                 }
 
                 auto &head_collider{ registry.emplace<clayborne::collider>(player.head) };
                 head_collider.w = head::hitbox_width;
                 head_collider.h = head::hitbox_height;
+                head_collider.collide = head_collision_handler;
 
                 auto &head_renderer{ registry.emplace<clayborne::renderer>(player.head) };
                 head_renderer.dstrect.w = head::hitbox_width;
@@ -317,8 +311,13 @@ namespace clayborne {
             auto &head_velocity{ registry.get<clayborne::velocity>(player.head) };
             auto &head_collider{ registry.get<clayborne::collider>(player.head) };
 
+            // Apply friction
+            if (head.is_grounded) {
+                head_velocity.x = approach(head_velocity.x, 0, head::friction * delta_time);
+                head_velocity.y = 0.0f;
+            }
             // Apply gravity
-            if (!head.is_grounded) {
+            else {
                 head_velocity.y = approach(head_velocity.y, head::fall_speed, head::gravity * delta_time);
             }
 
@@ -327,8 +326,25 @@ namespace clayborne {
             if (head_velocity.y >= 0) {
                 auto below{ head_position };
                 below.y += 1.0f;
-                if (overlap_any<clayborne::clay>(registry, player.head , below, head_collider)) {
+                if (overlap_any(registry, player.head , below, head_collider)) {
                     head.is_grounded = true;
+                }
+            }
+        }
+        // Regrow head
+        else if (!player.is_head_attached) {
+            if (player.is_grounded) {
+                auto below{ position };
+                below.y += 1.0f;
+                if (overlap_any<clayborne::clay>(registry, player_entity , below, collider)) {
+                    auto above{ position };
+                    above.y -= 1.0f;
+                    if (!overlap_any(registry, player_entity , above, collider)) {
+                        player.is_head_attached = true;
+                        position.y -= player::hitbox_height - player::headless_hitbox_height;
+                        collider.h = player::hitbox_height;
+                        renderer.dstrect.h = player::hitbox_height;
+                    }
                 }
             }
         }
