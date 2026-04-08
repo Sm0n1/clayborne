@@ -98,14 +98,13 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     float tile_size{ 8.0f };
 
     while (getline (file, line, ',')) {
-        if (line == "1") {
+        if (line == "1" || line == "2") {
             auto tile{ gs.registry.create() };
             gs.registry.emplace<clayborne::position>(tile, x * tile_size, y * tile_size);
             gs.registry.emplace<clayborne::collider>(tile, tile_size, tile_size);
-            //gs.registry.emplace<clayborne::renderer>(tile, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = tile_size, .h = tile_size });
         }
 
-        if (line == "0" ||  line == "1") {
+        if (line == "0" ||  line == "1" || line == "2") {
             x = x + 1;
             if (x>=39) {
                 x = 0;
