@@ -28,8 +28,12 @@ namespace clayborne {
         SDL_SetRenderTarget(renderer, canvas);
         SDL_RenderClear(renderer);
 
+        // Load image TODO: Move into seperate entity, don't reload every frame lol
+        auto image = SDL_LoadBMP("Character A.bmp");
+        auto texture = SDL_CreateTextureFromSurface(renderer, image);
+
         // Draw camera view
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_SetRenderDrawColor(renderer, 255, 155, 255, 255);
         auto &cpos = registry.get<const clayborne::position>(camera.entity);
         auto view = registry.view<const clayborne::position, const clayborne::collider>();
         for (auto [entity, pos, col]: view.each()) {
@@ -40,7 +44,12 @@ namespace clayborne {
                 .h = col.h
             };
             SDL_RenderFillRect(renderer, &rect);
+            SDL_RenderTexture(renderer, texture, nullptr, &rect);
         }
+
+        // Unload image TODO: delete when no longer needed.
+        SDL_DestroyTexture(texture);
+        //SDL_DestorySurface(image); (I feel like this being commented out should create a memory leak. A few kbs per frame? so, a mb a second, roughly?
 
         // Render camera view
         SDL_SetRenderTarget(renderer, nullptr);
