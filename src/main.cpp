@@ -3,6 +3,8 @@
 #include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_surface.h>
 #include <cstdio>
+#include <fstream>
+#include <string>
 #define SDL_MAIN_USE_CALLBACKS
 
 // #include <utility>
@@ -74,45 +76,45 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     gs.camera = clayborne::init_camera(gs.registry);
 
     // Initialize player
-    gs.player = clayborne::init_player(gs.registry, 160.0f, 90.0f);
+    gs.player = clayborne::init_player(gs.registry, 180.0f, 90.0f);
 
     // Initialize play area
-    auto floor{ gs.registry.create() };
-    gs.registry.emplace<clayborne::position>(floor, 0.0f, 160.0f);
-    gs.registry.emplace<clayborne::collider>(floor, 320.0f, 20.0f);
-    gs.registry.emplace<clayborne::renderer>(floor, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 320.0f, .h = 20.0f });
-    auto ceiling{ gs.registry.create() };
-    gs.registry.emplace<clayborne::position>(ceiling, 0.0f, 0.0f);
-    gs.registry.emplace<clayborne::collider>(ceiling, 320.0f, 16.0f);
-    gs.registry.emplace<clayborne::renderer>(ceiling, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 320.0f, .h = 16.0f });
-    auto left_wall{ gs.registry.create() };
-    gs.registry.emplace<clayborne::position>(left_wall, 0.0f, 0.0f);
-    gs.registry.emplace<clayborne::collider>(left_wall, 16.0f, 180.0f);
-    gs.registry.emplace<clayborne::renderer>(left_wall, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 16.0f, .h = 180.0f });
-    auto right_wall{ gs.registry.create() };
-    gs.registry.emplace<clayborne::position>(right_wall, 304.0f, 0.0f);
-    gs.registry.emplace<clayborne::collider>(right_wall, 16.0f, 180.0f);
-    gs.registry.emplace<clayborne::renderer>(right_wall, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 16.0f, .h = 180.0f });
-    auto p1{ gs.registry.create() };
-    gs.registry.emplace<clayborne::position>(p1, 32.0f, 128.0f);
-    gs.registry.emplace<clayborne::collider>(p1, 32.0f, 32.0f);
-    gs.registry.emplace<clayborne::renderer>(p1, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 32.0f, .h = 32.0f });
-    auto p2{ gs.registry.create() };
-    gs.registry.emplace<clayborne::position>(p2, 96.0f, 96.0f);
-    gs.registry.emplace<clayborne::collider>(p2, 8.0f, 32.0f);
-    gs.registry.emplace<clayborne::renderer>(p2, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 8.0f, .h = 32.0f });
-    auto p3{ gs.registry.create() };
-    gs.registry.emplace<clayborne::position>(p3, 152.0f, 112.0f);
-    gs.registry.emplace<clayborne::collider>(p3, 8.0f, 32.0f);
-    gs.registry.emplace<clayborne::renderer>(p3, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 8.0f, .h = 32.0f });
-    auto p4{ gs.registry.create() };
-    gs.registry.emplace<clayborne::position>(p4, 160.0f, 136.0f);
-    gs.registry.emplace<clayborne::collider>(p4, 32.0f, 8.0f);
-    gs.registry.emplace<clayborne::renderer>(p4, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 32.0f, .h = 8.0f });
-    auto p5{ gs.registry.create() };
-    gs.registry.emplace<clayborne::position>(p5,240.0f, 120.0f);
-    gs.registry.emplace<clayborne::collider>(p5, 32.0f, 32.0f);
-    gs.registry.emplace<clayborne::renderer>(p5, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 32.0f, .h = 32.0f });
+
+    // Quick and dirty ldtk super simple level format reader
+    // move this to its own file
+
+    // need sdl_image to get the level sprite from png
+    // auto level{ gs.registry.create() };
+    // gs.registry.emplace<clayborne::renderer>(level, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 640.0f, .h = 360.0f });
+
+    std::ifstream file("../data/levels/tiles.csv");
+
+    std::string line;
+
+    float x{0};
+    float y{0};
+    int total{0};
+
+    float tile_size{ 4.0f };
+
+    while (getline (file, line, ',')) {
+        if (line == "1") {
+            auto tile{ gs.registry.create() };
+            gs.registry.emplace<clayborne::position>(tile, x * tile_size, y * tile_size);
+            gs.registry.emplace<clayborne::collider>(tile, tile_size, tile_size);
+            gs.registry.emplace<clayborne::renderer>(tile, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = tile_size, .h = tile_size });
+        }
+
+        if (line == "0" ||  line == "1") {
+            total++;
+            x = x + 1;
+            if (x>=79) {
+                x = 0;
+                y = y + 1;
+            }
+        }
+    }
+    // end of level loader
 
     // Initialize timer
     gs.current_time = SDL_GetTicksNS();
