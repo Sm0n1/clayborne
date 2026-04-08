@@ -1,9 +1,11 @@
 #include "SDL3/SDL_events.h"
+#include <SDL3/SDL_render.h>
 #include <SDL3/SDL_scancode.h>
+#include <SDL3/SDL_surface.h>
 #include <cstdio>
 #define SDL_MAIN_USE_CALLBACKS
 
-#include <utility>
+// #include <utility>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL.h>
 #include <entt/entt.hpp>
@@ -12,7 +14,6 @@
 #include "camera.hpp"
 #include "player.hpp"
 #include "physics.hpp"
-#include "engine/time.hpp"
 
 struct gamestate {
     SDL_Window *window{ nullptr };
@@ -57,6 +58,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
 
     // Enable automatic scaling
     SDL_SetRenderLogicalPresentation(gs.renderer, 320, 180, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
+    
 
     // Initialize canvas
     gs.canvas = SDL_CreateTexture(gs.renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 320, 180);
@@ -64,6 +66,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
         SDL_Log("SDL create texture failed: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+
+    // Scale the canvas with sharp edges
+    SDL_SetTextureScaleMode(gs.canvas, SDL_SCALEMODE_NEAREST);
 
     // Initialize camera
     gs.camera = clayborne::init_camera(gs.registry);
@@ -96,8 +101,8 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
         // ------------------------ //
         // Temporary Input Handling //
         // ------------------------ //
-        case SDL_SCANCODE_J: gs.player.jump = clayborne::player::button::just_pressed; break;
-        case SDL_SCANCODE_K: gs.player.head = clayborne::player::button::just_pressed; break;
+        case SDL_SCANCODE_J: gs.player.jump_just_pressed = true; gs.player.jump_pressed = true; break;
+        case SDL_SCANCODE_K: gs.player.head_just_pressed = true; break;
         case SDL_SCANCODE_W: gs.player.up = true; break;
         case SDL_SCANCODE_A: gs.player.left = true; break;
         case SDL_SCANCODE_S: gs.player.down = true; break;
@@ -112,8 +117,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
         // Temporary Input Handling //
         // ------------------------ //
         switch (event->key.scancode) {
-        case SDL_SCANCODE_J: gs.player.jump = clayborne::player::button::just_released; break;
-        case SDL_SCANCODE_K: gs.player.head = clayborne::player::button::just_released; break;
+        case SDL_SCANCODE_J: gs.player.jump_pressed = false; break;
         case SDL_SCANCODE_W: gs.player.up = false; break;
         case SDL_SCANCODE_A: gs.player.left = false; break;
         case SDL_SCANCODE_S: gs.player.down = false; break;

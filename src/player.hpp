@@ -13,13 +13,13 @@ namespace clayborne {
         // ------------------------ //
         // Temporary Input Handling //
         // ------------------------ //
-        enum class button { pressed, just_pressed, released, just_released };
-        button jump;
-        button head;
-        bool left;
-        bool right;
-        bool up;
-        bool down;
+        bool jump_just_pressed{ false }; // Celeste clears its jump buffer when releasing the button
+        bool jump_pressed{ false };
+        bool head_just_pressed{ false };
+        bool left{ false };
+        bool right{ false };
+        bool up{ false };
+        bool down{ false };
         // ------------------------ //
 
         enum class facing {
@@ -34,21 +34,26 @@ namespace clayborne {
 
         static constexpr float jump_speed{ -150.0f };
         static constexpr float jump_horizontal_boost{ 40.0f };
-        static constexpr Uint64 jump_grace_time_ns{ SDL_NS_PER_SECOND / 10 };
+        static constexpr float jump_grace_time{ 0.1f };
+        static constexpr float jump_boost_time{ 0.2f };
 
-        static constexpr Uint64 wall_speed_retention_time{ 6 * (SDL_NS_PER_SECOND / 10) };
+        static constexpr float fall_speed{ 160.0f };
+        static constexpr float gravity{ 900.0f };
+        static constexpr float half_gravity_threshold{ 40.0f };
 
-        bool is_jumping{ false };
+        static constexpr float wall_speed_retention_time{ 0.6f };
+
         bool is_grounded{ true };
         facing facing{ facing::right };
-        Uint64 jump_grace_timer_ns{ jump_grace_time_ns };
 
-        Uint64 wall_speed_retention_timer{ 0 };
+        // Allows jumping a few moments after beginning to fall.
+        float jump_grace_timer{ 0.0f };
+
+        float jump_boost_timer{ 0.0f };
+        float jump_boost_speed{ 0.0f };
+
+        float wall_speed_retention_timer{ 0.0f };
         float wall_speed_retention{ 0.0f };
-
-        input::action::descriptor move_action;
-        input::action::descriptor jump_action;
-        input::action::descriptor use_head_action;
 
         entt::entity entity{ entt::null };
     };

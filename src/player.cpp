@@ -23,8 +23,14 @@ namespace clayborne {
         player.entity = registry.create();
         registry.emplace<position>(player.entity, 0.0f, 0.0f);
         registry.emplace<velocity>(player.entity, 0.0f, 0.0f);
-        registry.emplace<collider>(player.entity, 16.0f, 16.0f);
-        registry.emplace<renderer>(player.entity, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 16.0f, .h = 16.0f });
+        registry.emplace<collider>(player.entity, 8.0f, 11.0f);
+        registry.emplace<renderer>(player.entity, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 8.0f, .h = 11.0f });
+
+        // TODO: remove
+        auto ground{ registry.create() };
+        registry.emplace<position>(ground, 0.0f, 160.0f);
+        registry.emplace<collider>(ground, 320.0f, 20.0f);
+        registry.emplace<renderer>(ground, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 320.0f, .h = 20.0f });
 
         return player;
     }
@@ -34,24 +40,57 @@ namespace clayborne {
     }
 
     void update_player(player &player, entt::registry &registry, const input::manager &inputs, Uint64 dt_ns) {
+        const float delta_time{ static_cast<float>(static_cast<double>(dt_ns) / SDL_NS_PER_SECOND) };
+
         for (auto event : inputs.get_events()) {
             // use event information???
             (void)event;
         }
-        (void)player;
-        (void)registry;
 
+        auto &velocity{ registry.get<clayborne::velocity>(player.entity) };
+        auto &position{ registry.get<clayborne::position>(player.entity) };
+        auto &collider{ registry.get<clayborne::collider>(player.entity) };
+
+        // Check if grounded
+        player.is_grounded = false;
+        if (velocity.y >= 0) {
+            auto below{ position };
+            below.y += 1.0f;
+
+            auto view{ registry.view<const clayborne::position, const clayborne::collider>() };
+            for (auto [e, p, c] : view.each()) {
+                if (player.entity == e) {
+                    continue;
+                }
+                
+                if (clayborne::overlap(below, collider, p, c)) {
+                    player.is_grounded = true;
+                    break;
+                }
+            }
+        }
+
+        // No idea
+        // if (player.is_grounded) {
+        //     highestAirY = Y;
+        // }
+        // else {
+        //     highestAirY = Math.Min(Y, highestAirY);
+        // }
+
+        // Update jump grace timer
         if (player.is_grounded) {
-            player.jump_grace_timer_ns = player::jump_grace_time_ns;
+            player.jump_grace_timer = player::jump_grace_time;
         }
-        else if (player.jump_grace_timer_ns > 0) {
-            player.jump_grace_timer_ns -= dt_ns;
+        else if (player.jump_grace_timer > 0.0f) {
+            player.jump_grace_timer -= delta_time;
         }
 
-        auto &velocity = registry.get<clayborne::velocity>(player.entity);
-        auto &position = registry.get<clayborne::velocity>(player.entity);
-        (void)position;
-
+        if (player.jump_boost_timer > 0) {
+            player.jump_boost_timer -= delta_time;
+        }
+                    
+        // Update facing
         if (velocity.x > 0.0f) {
             player.facing = player::facing::right;
         }
@@ -72,41 +111,60 @@ namespace clayborne {
         //     }
         // }
 
-        const float move_x{ static_cast<float>(player.right - player.left) };
-        const float sign_x{ static_cast<float>((velocity.x > 0.0f) - (velocity.x < 0.0f)) };
-        const float mult{ player.is_grounded ? 1.0f : player.air_multiplier };
-        const float delta_time{ static_cast<float>(static_cast<double>(dt_ns) / SDL_NS_PER_SECOND) };
+        // ------------------- //
+        // Horizontal Movement //
+        // ------------------- //
 
-        if (std::abs(velocity.x) > player::run_speed && sign_x == move_x) {
-            printf("DEC: dir = %f, sign = %f, from = %f, to = %f, amount = %f\n", 
-                static_cast<double>(move_x),
-                static_cast<double>(sign_x),
-                static_cast<double>(velocity.x),
-                static_cast<double>(move_x * player::run_speed),
-                static_cast<double>(player::run_deceleration * mult * delta_time)
-            );
-            velocity.x = approach(velocity.x, move_x * player::run_speed, player::run_deceleration * mult * delta_time);
+        const float move_input{ static_cast<float>(player.right - player.left) };
+        const float velocity_sign{ static_cast<float>((velocity.x > 0.0f) - (velocity.x < 0.0f)) };
+        const float multiplier{ player.is_grounded ? 1.0f : player.air_multiplier };
+
+        if (std::abs(velocity.x) > player::run_speed && velocity_sign == move_input) {
+            velocity.x = approach(velocity.x, move_input * player::run_speed, player::run_deceleration * multiplier * delta_time);
         }
         else {
-            printf("ACC: dir = %f, sign = %f, from = %f, to = %f, amount = %f\n", 
-                static_cast<double>(move_x),
-                static_cast<double>(sign_x),
-                static_cast<double>(velocity.x),
-                static_cast<double>(move_x * player::run_speed),
-                static_cast<double>(player::run_deceleration * mult * delta_time)
-            );
-            velocity.x = approach(velocity.x, move_x * player::run_speed, player::run_acceleration * mult * delta_time);
+            velocity.x = approach(velocity.x, move_input * player::run_speed, player::run_acceleration * multiplier * delta_time);
+        }
+
+        // ----------------- //
+        // Vertical Movement //
+        // ----------------- //
+
+        // The apex of the jump has lower gravity if holding the jump button
+        if (!player.is_grounded) {
+            bool is_half_gravity_applicable{ std::abs(velocity.y) < player::half_gravity_threshold };
+            float mult = (is_half_gravity_applicable && player.jump_pressed) ? 0.5f : 1.0f;
+            velocity.y = approach(velocity.y, player::fall_speed, player::gravity * mult * delta_time);
+        }
+
+        // Holding the jump button from the start gives higher jumps
+        if (player.jump_boost_timer > 0.0f) {
+            if (player.jump_pressed) {
+                velocity.y = std::min(velocity.y, player.jump_boost_speed);
+            }
+            else {
+                player.jump_boost_timer = 0.0f;
+            }
+        }
+
+        // Jumping is allowed some time after beginning to fall
+        // TODO: add jump buffer
+        if (player.jump_just_pressed && player.jump_grace_timer > 0.0f) {
+            // TODO: consume jump buffer here!
+            player.jump_grace_timer = 0;
+            player.jump_boost_timer = player::jump_boost_time;
+
+            velocity.x += player::jump_horizontal_boost * move_input;
+            velocity.y = player::jump_speed;
+            // jump pad boost goes here
+            player.jump_boost_speed = velocity.y;
         }
 
         // ------------------------ //
         // Temporary Input Handling //
         // ------------------------ //
-        if (player.jump == player::button::just_pressed) {
-            player.jump = player::button::pressed;
-        }
-        else if (player.jump == player::button::just_released) {
-            player.jump = player::button::released;
-        }
+        player.jump_just_pressed = false;
+        player.head_just_pressed = false;
         // ------------------------ //
     }
 
