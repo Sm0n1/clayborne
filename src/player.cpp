@@ -41,7 +41,6 @@ namespace clayborne {
             renderer.dstrect.h = renderer.srcrect.h;
             renderer.dstrect.y = 0.0f;
         }
-        
     }
 
     static void player_collision_handler(entt::registry &registry, const collider::collision &collision) {
@@ -327,6 +326,10 @@ namespace clayborne {
                 head_collider.collide = head_collision_handler;
 
                 auto &head_renderer{ registry.emplace<clayborne::renderer>(player.head) };
+                head_renderer.texture = renderer.texture;
+                head_renderer.srcrect.w = head::hitbox_width;
+                head_renderer.srcrect.h = head::hitbox_height;
+                head_renderer.srcrect.x = 4.0f;
                 head_renderer.dstrect.w = head::hitbox_width;
                 head_renderer.dstrect.h = head::hitbox_height;
             }
