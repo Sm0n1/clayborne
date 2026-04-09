@@ -5,9 +5,7 @@
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_timer.h>
 #include <entt/entt.hpp>
-#include "engine/input/action.hpp"
 #include "engine/input/manager.hpp"
-#include "physics.hpp"
 
 // HEAD MECHANIC
 //
@@ -97,12 +95,16 @@ namespace clayborne {
     struct head {
         static constexpr float hitbox_width{ 8.0f };
         static constexpr float hitbox_height{ 8.0f };
-        static constexpr float throw_speed{ 300.0f };
-        static constexpr float friction{ 1000.0f };
+        static constexpr float throw_speed{ 200.0f };
+        static constexpr float throw_deceleration{ 500.0f };
         static constexpr float gravity{ player::gravity };
         static constexpr float fall_speed{ player::fall_speed };
 
+        static constexpr float explosion_radius{ 14.0f };
+
         bool is_grounded{ true };
+        bool is_thrown{ true };
+        bool is_detonated{ false };
     };
     
     entt::entity init_player(entt::registry &registry, float x, float y) noexcept;

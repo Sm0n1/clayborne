@@ -90,7 +90,10 @@ namespace clayborne {
     }
 
     static void head_collision_handler(entt::registry &registry, const collider::collision &collision) {
+        auto &head{ registry.get<clayborne::head>(collision.self) };
         auto &velocity{ registry.get<clayborne::velocity>(collision.self) };
+
+        head.is_thrown = false;
 
         if (collision.normal_x != 0.0f) {
             velocity.x = 0.0f;
@@ -283,7 +286,7 @@ namespace clayborne {
                     head_velocity.y = y * invlen * head::throw_speed;
                     head_position.x += x * player::hitbox_width;
                     head_position.y += y * player::headless_hitbox_height;
-                    printf("throw (aim): %f, %f\n", static_cast<double>(x), static_cast<double>(y));
+                    printf("throw (aim): %f, %f\n", static_cast<double>(head_velocity.x), static_cast<double>(head_velocity.y));
                 }
 
                 auto &head_collider{ registry.emplace<clayborne::collider>(player.head) };
@@ -311,23 +314,31 @@ namespace clayborne {
             auto &head_velocity{ registry.get<clayborne::velocity>(player.head) };
             auto &head_collider{ registry.get<clayborne::collider>(player.head) };
 
-            // Apply friction
-            if (head.is_grounded) {
-                head_velocity.x = approach(head_velocity.x, 0, head::friction * delta_time);
-                head_velocity.y = 0.0f;
-            }
-            // Apply gravity
-            else {
-                head_velocity.y = approach(head_velocity.y, head::fall_speed, head::gravity * delta_time);
-            }
+            // Update throw movement
+            if (head.is_thrown) {
+                head_velocity.x = approach(head_velocity.x, 0.0f, head::throw_deceleration * delta_time);
+                head_velocity.y = approach(head_velocity.y, 0.0f, head::throw_deceleration * delta_time);
 
-            // Check if grounded
-            head.is_grounded = false;
-            if (head_velocity.y >= 0) {
-                auto below{ head_position };
-                below.y += 1.0f;
-                if (overlap_any(registry, player.head , below, head_collider)) {
-                    head.is_grounded = true;
+                constexpr float tolerance{ 0.0001f };
+                if (std::abs(head_velocity.x) <= tolerance && std::abs(head_velocity.y) <= tolerance) {
+                    head.is_thrown = false;
+                    head_velocity.x = 0.0f;
+                    head_velocity.y = 0.0f;
+                }
+            }
+            else {
+                if (!head.is_grounded) {
+                    head_velocity.y = approach(head_velocity.y, head::fall_speed, head::gravity * delta_time);
+                }
+
+                // Check if grounded
+                head.is_grounded = false;
+                if (head_velocity.y >= 0) {
+                    auto below{ head_position };
+                    below.y += 1.0f;
+                    if (overlap_any(registry, player.head , below, head_collider)) {
+                        head.is_grounded = true;
+                    }
                 }
             }
         }
