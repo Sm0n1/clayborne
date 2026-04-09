@@ -25,7 +25,7 @@ namespace clayborne::input {
             return nullptr;
         }
 
-        return &maps[map.value];
+        return &maps[static_cast<std::size_t>(map.value)];
     }
     
     [[nodiscard]] const map::map *manager::get_map(map::id map) const {
@@ -33,7 +33,7 @@ namespace clayborne::input {
             return nullptr;
         }
 
-        return &maps[map.value];
+        return &maps[static_cast<std::size_t>(map.value)];
     }
 
     void manager::clear_events() {
@@ -143,7 +143,7 @@ namespace clayborne::input {
             return false;
         }
 
-        auto &map{ maps[active_map->value] };
+        auto &map{ maps[static_cast<std::size_t>(active_map->value)] };
 
         switch (event.type) {
         case SDL_EVENT_KEY_UP:
