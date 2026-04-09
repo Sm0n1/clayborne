@@ -15,6 +15,7 @@ namespace clayborne {
         SDL_Texture *texture{ nullptr };
         SDL_FRect srcrect{};
         SDL_FRect dstrect{};
+        int z{ 0 };
     };
 
     clayborne::camera init_camera(entt::registry &registry);

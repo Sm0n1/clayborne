@@ -94,13 +94,15 @@ namespace clayborne {
         auto &velocity{ registry.get<clayborne::velocity>(collision.self) };
 
         head.is_thrown = false;
+        velocity.x = 0.0f;
+        velocity.y = 0.0f;
 
-        if (collision.normal_x != 0.0f) {
-            velocity.x = 0.0f;
-        }
-        else if (collision.normal_y != 0.0f) {
-            velocity.y = 0.0f;
-        }
+        // if (collision.normal_x != 0.0f) {
+        //     velocity.x = 0.0f;
+        // }
+        // else if (collision.normal_y != 0.0f) {
+        //     velocity.y = 0.0f;
+        // }
     }
 
     entt::entity init_player(entt::registry &registry, float x, float y) noexcept {
