@@ -20,6 +20,30 @@
 }
 
 namespace clayborne {
+
+    // TODO perhaps change magic numbers to header consts or something.
+    static void set_player_tall(bool tall, clayborne::renderer& renderer) {
+        if (tall) {
+            renderer.srcrect.w = player::hitbox_width;
+            renderer.srcrect.h = player::hitbox_height + 5.0f;
+            renderer.srcrect.x = 4.0f;
+            renderer.srcrect.y = 0.0f;
+            renderer.dstrect.w = renderer.srcrect.w;
+            renderer.dstrect.h = renderer.srcrect.h;
+            renderer.dstrect.y = -5.0f;
+        }
+        else {
+            renderer.srcrect.w = player::hitbox_width;
+            renderer.srcrect.h = player::headless_hitbox_height;
+            renderer.srcrect.x = 4.0f;
+            renderer.srcrect.y = 8.0f;
+            renderer.dstrect.w = renderer.srcrect.w;
+            renderer.dstrect.h = renderer.srcrect.h;
+            renderer.dstrect.y = 0.0f;
+        }
+        
+    }
+
     static void player_collision_handler(entt::registry &registry, const collider::collision &collision) {
         auto &player{ registry.get<clayborne::player>(collision.self) };
         auto &position{ registry.get<clayborne::position>(collision.self) };
@@ -56,7 +80,7 @@ namespace clayborne {
             // Update player shape
             position.y -= player::hitbox_height - player::headless_hitbox_height;
             collider.h = player::hitbox_height;
-            renderer.dstrect.h = player::hitbox_height;
+            set_player_tall(true, renderer);
         }
 
         if (velocity.y < 0.0f) {
@@ -110,6 +134,8 @@ namespace clayborne {
         // }
     }
 
+    
+
     entt::entity init_player(entt::registry &registry, clayborne::resources &resources, float x, float y) noexcept {
         auto player_entity{ registry.create() };
 
@@ -123,13 +149,9 @@ namespace clayborne {
         collider.collide = player_collision_handler;
 
         auto &renderer{ registry.emplace<clayborne::renderer>(player_entity) };
-        renderer.dstrect.w = player::hitbox_width;
-        renderer.dstrect.h = player::hitbox_height+5.0f;
-        renderer.dstrect.y = -5.0f;
-        renderer.srcrect.w = player::hitbox_width;
-        renderer.srcrect.h = player::hitbox_height+5.0f;
-        renderer.srcrect.x = 4.0f;
         renderer.texture = resources.spritesheet;
+
+        set_player_tall(true, renderer);
         
         return player_entity;
     }
@@ -271,7 +293,7 @@ namespace clayborne {
                 // Update player shape
                 position.y += player::hitbox_height - player::headless_hitbox_height;
                 collider.h = player::headless_hitbox_height;
-                renderer.dstrect.h = player::headless_hitbox_height;
+                set_player_tall(false, renderer);
 
                 const float x{ static_cast<float>(player.right - player.left) };
                 const float y{ static_cast<float>(player.down - player.up) };
@@ -405,7 +427,7 @@ namespace clayborne {
                         player.is_head_attached = true;
                         position.y -= player::hitbox_height - player::headless_hitbox_height;
                         collider.h = player::hitbox_height;
-                        renderer.dstrect.h = player::hitbox_height;
+                        set_player_tall(true, renderer);
                     }
                 }
             }
