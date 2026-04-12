@@ -28,7 +28,7 @@ namespace clayborne {
         registry.destroy(camera.entity);
     }
 
-    void render(const clayborne::camera& camera, const entt::registry& registry, SDL_Renderer* renderer, SDL_Texture* canvas) {
+    void render(const clayborne::camera &camera, const entt::registry &registry, SDL_Renderer *renderer, SDL_Texture *canvas) {
         // Clear last frame
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);

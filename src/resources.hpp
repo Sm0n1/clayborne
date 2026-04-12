@@ -5,7 +5,6 @@
 
 namespace clayborne {
 	struct resources {
-		SDL_Renderer *renderer; // Could be a problem if the renderer is deconstructed for some reason?
 		SDL_Texture *spritesheet; // Might want an array for multiple "pages" of sprites
 	};
 

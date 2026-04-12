@@ -168,8 +168,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     // gs.registry.emplace<clayborne::collider>(p5, 32.0f, 32.0f);
     // gs.registry.emplace<clayborne::renderer>(p5, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 32.0f, .h = 32.0f });
 
-    // Initialize resources
-    gs.resources = clayborne::init_resources(gs.renderer);
 
     // Initialize timer
     gs.current_time = SDL_GetTicksNS();
