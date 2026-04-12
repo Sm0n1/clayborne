@@ -5,24 +5,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <entt/entt.hpp>
-#include <iostream>
 #include <optional>
-#include <source_location>
 #include "player.hpp"
 #include "physics.hpp"
 #include "camera.hpp"
 #include "clay.hpp"
-
-// static void log(const char* msg, const std::source_location loc = std::source_location::current()) {
-//     std::cout << loc.line() << " " << msg << std::endl;
-// }
-
-[[nodiscard]] static inline constexpr float approach(const float from, const float to, const float amount) noexcept {
-    const float delta{ to - from };
-    const float sign{ static_cast<float>((delta > 0.0f) - (delta < 0.0f)) };
-    const float change{ std::clamp(amount * sign, -std::abs(delta), std::abs(delta)) };
-    return from + change;
-}
+#include "utils.hpp"
 
 namespace clayborne {
     static void player_collision_handler(entt::registry &registry, const collider::collision &collision) {
@@ -36,13 +24,13 @@ namespace clayborne {
         // Horizontal Collisions //
         // --------------------- //
 
-        if (collision.normal_x != 0.0f) {
+        if (collision.normal.x != 0.0f) {
             if (player.wall_speed_retention_timer <= 0) {
                 player.wall_speed_retention = velocity.x;
                 player.wall_speed_retention_timer = player::wall_speed_retention_time;
             }
 
-            velocity.x = 0;
+            velocity.x = 0.0f;
 
             return;
         }
@@ -52,7 +40,7 @@ namespace clayborne {
         // ------------------- //
 
         // Reattach head if it falls on player
-        if (player.head == collision.other && collision.normal_y > 0.0f) {
+        if (player.head == collision.other && collision.normal.y > 0.0f) {
             player.is_head_attached = true;
 
             registry.destroy(player.head);
@@ -102,13 +90,6 @@ namespace clayborne {
         head.is_thrown = false;
         velocity.x = 0.0f;
         velocity.y = 0.0f;
-
-        // if (collision.normal_x != 0.0f) {
-        //     velocity.x = 0.0f;
-        // }
-        // else if (collision.normal_y != 0.0f) {
-        //     velocity.y = 0.0f;
-        // }
     }
 
     entt::entity init_player(entt::registry &registry, float x, float y) noexcept {
@@ -189,11 +170,9 @@ namespace clayborne {
                 player.wall_speed_retention_timer = 0.0f;
             }
             else {
-                auto p{ position };
-                p.x += static_cast<float>(player.wall_speed_retention > 0.0f) + static_cast<float>(player.wall_speed_retention < 0.0f);
-                
-                bool is_wall{ overlap_any(registry, player_entity, p, collider) };
-                if (!is_wall) {
+                auto new_position{ position };
+                new_position.x += sgn(player.wall_speed_retention);
+                if (!overlap_any(registry, player_entity, new_position, collider)) {
                     velocity.x = player.wall_speed_retention;
                     player.wall_speed_retention_timer = 0.0f;
                 }
