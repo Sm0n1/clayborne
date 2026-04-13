@@ -142,15 +142,25 @@ namespace clayborne {
     struct head {
         static constexpr float hitbox_width{ 8.0f };
         static constexpr float hitbox_height{ 8.0f };
-        static constexpr float throw_speed{ 200.0f };
+         
         static constexpr float throw_deceleration{ 500.0f };
+        static constexpr int   throw_corner_correction{ 3 };
 
+        static constexpr float explosion_duration{ 0.3f };
         static constexpr float explosion_radius{ 14.0f };
-        static constexpr float explosion_speed{ 400.0f };
+
+        enum class state {
+            start,
+            buried,
+            thrown,
+            detonated,
+        };
 
         bool is_grounded{ false };
-        bool is_thrown{ true };
-        bool is_detonated{ false };
+        state state{ state::start };
+
+        float throw_timer{ 0.0f };
+        float explosion_timer{ 0.0f };
     };
     
     entt::entity init_player(entt::registry &registry, float x, float y) noexcept;

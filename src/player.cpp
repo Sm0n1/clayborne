@@ -99,14 +99,60 @@ namespace clayborne {
 
     static void head_collision_handler(entt::registry &registry, const collider::collision &collision) noexcept {
         auto &head{ registry.get<clayborne::head>(collision.self) };
+        auto &position{ registry.get<clayborne::position>(collision.self) };
         auto &velocity{ registry.get<clayborne::velocity>(collision.self) };
-
-        head.is_thrown = false;
+        auto &collider{ registry.get<clayborne::collider>(collision.self) };
 
         if (collision.normal.x != 0.0f) {
+            if (head.state == head::state::thrown) {
+                // Corner correction
+                for (int i{ 1 }; i <= head::throw_corner_correction; i += 1) {
+                    for (int direction : { -1, 1 }) {
+                        auto new_position{ position };
+                        new_position.x -= collision.normal.x;
+                        new_position.y += static_cast<float>(i * direction);
+                        if (!overlap_any(registry, collision.self, new_position, collider)) {
+                            printf("x collision: (%f,%f) -> (%f,%f) [%f,%f]\n",
+                                static_cast<double>(position.x),
+                                static_cast<double>(position.y),
+                                static_cast<double>(new_position.x),
+                                static_cast<double>(new_position.y),
+                                static_cast<double>(velocity.x),
+                                static_cast<double>(velocity.y)
+                            );
+                            position = new_position;
+                            return;
+                        }
+                    }
+                }
+            }
+
             velocity.x = 0.0f;
         }
         else if (collision.normal.y != 0.0f) {
+            if (head.state == head::state::thrown) {
+                // Corner correction
+                for (int i{ 1 }; i <= head::throw_corner_correction; i += 1) {
+                    for (int direction : { -1, 1 }) {
+                        auto new_position{ position };
+                        new_position.x += static_cast<float>(i * direction);
+                        new_position.y -= collision.normal.y;
+                        if (!overlap_any(registry, collision.self, new_position, collider)) {
+                            printf("y collision: (%f,%f) -> (%f,%f) [%f,%f]\n",
+                                static_cast<double>(position.x),
+                                static_cast<double>(position.y),
+                                static_cast<double>(new_position.x),
+                                static_cast<double>(new_position.y),
+                                static_cast<double>(velocity.x),
+                                static_cast<double>(velocity.y)
+                            );
+                            position = new_position;
+                            return;
+                        }
+                    }
+                }
+            }
+
             velocity.y = 0.0f;
         }
     }
@@ -181,6 +227,10 @@ namespace clayborne {
         auto &collider{ registry.get<clayborne::collider>(player_entity) };
         auto &renderer{ registry.get<clayborne::renderer>(player_entity) };
 
+        // ----------------------------- //
+        // Update States, Flags & Timers //
+        // ----------------------------- //
+
         // Check if grounded
         player.is_grounded = false;
         if (velocity.y >= 0.0f) {
@@ -199,14 +249,6 @@ namespace clayborne {
             if (overlap_any<clayborne::clay>(registry, player_entity , below, collider)) {
                 player.is_on_clay = true;
             }
-        }
-
-        // Update head buffer timer
-        if (player.head_just_pressed) {
-            player.head_buffer_timer = player::head_buffer_duration;
-        }
-        if (player.head_buffer_timer > 0.0f) {
-            player.head_buffer_timer -= delta_time;
         }
 
         // Update jump buffer timer
@@ -253,6 +295,34 @@ namespace clayborne {
                 else {
                     player.wall_speed_retention_timer -= delta_time;
                 }
+            }
+        }
+
+        // Update head buffer timer
+        if (player.head_just_pressed) {
+            player.head_buffer_timer = player::head_buffer_duration;
+        }
+        if (player.head_buffer_timer > 0.0f) {
+            player.head_buffer_timer -= delta_time;
+        }
+
+        // Update throwing state
+        if (player.state == player::state::throwing) {
+            if (player.head_throw_timer > 0.0f) {
+                player.head_throw_timer -= delta_time;
+            }
+            else {
+                player.state = player::state::start;
+            }
+        }
+
+        // Update launched state
+        if (player.state == player::state::launched) {
+            if (player.head_launch_timer > 0.0f) {
+                player.head_launch_timer -= delta_time;
+            }
+            else {
+                player.state = player::state::start;
             }
         }
 
@@ -335,7 +405,6 @@ namespace clayborne {
 
                     // Bury head
                     if (player.is_on_clay && head_velocity.x == 0.0f && head_velocity.y > 0.0f) {
-                        log("head buried");
                         player.is_head_attached = false;
                         player.state = player::state::throwing;
                         player.head_throw_timer = player::head_throw_duration;
@@ -410,7 +479,6 @@ namespace clayborne {
 
                         // Throw succeeded
                         if (!overlap(new_position, new_collider, head_position, head_collider)) {
-                            log("throw succeded");
                             player.is_head_attached = false;
                             player.state = player::state::throwing;
                             player.head_throw_timer = player::head_throw_duration;
@@ -420,7 +488,9 @@ namespace clayborne {
                             renderer.dstrect.h = player::headless_hitbox_height;
 
                             player.head = registry.create();
-                            registry.emplace<clayborne::head>(player.head);
+                            auto &head{ registry.emplace<clayborne::head>(player.head) };
+                            head.state = head::state::thrown;
+                            head.throw_timer = player::head_throw_duration;
                             registry.emplace<clayborne::position>(player.head, head_position);
                             registry.emplace<clayborne::velocity>(player.head, head_velocity);
                             registry.emplace<clayborne::collider>(player.head, head_collider);
@@ -431,7 +501,6 @@ namespace clayborne {
                         // Throw failed
                         // We still enter the throw state, but the player keeps their head and aren't moved
                         else {
-                            log("throw failed");
                             player.is_head_attached = true;
                             player.state = player::state::throwing;
                             player.head_throw_timer = player::head_throw_duration;
@@ -477,8 +546,8 @@ namespace clayborne {
                         };
                         const float angle = std::atan2(delta_y, delta_x);
                         const int octant = static_cast<int>(std::round(angle / (pi / 4.0f))) & 7;
-                        velocity.x = directions[octant].x * head::explosion_speed;
-                        velocity.y = directions[octant].y * head::explosion_speed;
+                        velocity.x = directions[octant].x * player::head_launch_speed;
+                        velocity.y = directions[octant].y * player::head_launch_speed;
                     }
 
                     registry.destroy(player.head);
@@ -487,35 +556,17 @@ namespace clayborne {
             }
         }
         
-        if (player.state == player::state::throwing) {
-            if (player.head_throw_timer <= 0.0f) {
-                player.state = player::state::start;
-                player.head_throw_timer = 0.0f;
-            }
-            else {
-                player.head_throw_timer -= delta_time;
-            }
-        }
+        // ----------- //
+        // Update Head //
+        // ----------- //
 
-        // Update throw movement
         if (player.head != entt::null) {
             auto &head{ registry.get<clayborne::head>(player.head) };
             auto &head_position{ registry.get<clayborne::position>(player.head) };
             auto &head_velocity{ registry.get<clayborne::velocity>(player.head) };
             auto &head_collider{ registry.get<clayborne::collider>(player.head) };
 
-            if (head.is_thrown) {
-                head_velocity.x = approach(head_velocity.x, 0.0f, head::throw_deceleration * delta_time);
-                head_velocity.y = approach(head_velocity.y, 0.0f, head::throw_deceleration * delta_time);
-
-                constexpr float tolerance{ 0.0001f };
-                if (std::abs(head_velocity.x) <= tolerance && std::abs(head_velocity.y) <= tolerance) {
-                    head.is_thrown = false;
-                    head_velocity.x = 0.0f;
-                    head_velocity.y = 0.0f;
-                }
-            }
-            else {
+            if (head.state == head::state::start) {
                 // Check if grounded
                 head.is_grounded = false;
                 if (head_velocity.y >= 0) {
@@ -530,6 +581,24 @@ namespace clayborne {
                 if (!head.is_grounded) {
                     head_velocity.y = approach(head_velocity.y, player::fall_speed, player::gravity * delta_time);
                 }
+            }
+            else if (head.state == head::state::thrown) {
+                if (head.throw_timer > 0.0f) {
+                    head.throw_timer -= delta_time;
+                }
+                else {
+                    head.state = head::state::start;
+                }
+                printf("(%f,%f)\n", static_cast<double>(head_velocity.x), static_cast<double>(head_velocity.y));
+                // head_velocity.x = approach(head_velocity.x, 0.0f, head::throw_deceleration * delta_time);
+                // head_velocity.y = approach(head_velocity.y, 0.0f, head::throw_deceleration * delta_time);
+
+                // constexpr float tolerance{ 0.0001f };
+                // if (std::abs(head_velocity.x) <= tolerance && std::abs(head_velocity.y) <= tolerance) {
+                //     head.state = head::state::start;
+                //     head_velocity.x = 0.0f;
+                //     head_velocity.y = 0.0f;
+                // }
             }
         }
 
