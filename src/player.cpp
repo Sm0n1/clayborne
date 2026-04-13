@@ -102,8 +102,13 @@ namespace clayborne {
         auto &velocity{ registry.get<clayborne::velocity>(collision.self) };
 
         head.is_thrown = false;
-        velocity.x = 0.0f;
-        velocity.y = 0.0f;
+
+        if (collision.normal.x != 0.0f) {
+            velocity.x = 0.0f;
+        }
+        else if (collision.normal.y != 0.0f) {
+            velocity.y = 0.0f;
+        }
     }
 
     entt::entity init_player(entt::registry &registry, float x, float y) noexcept {
@@ -125,6 +130,43 @@ namespace clayborne {
         return player_entity;
     }
 
+    static clayborne::velocity compute_throw_velocity(const clayborne::player &player) {
+        const float x{ static_cast<float>(player.right - player.left) };
+        const float y{ static_cast<float>(player.down - player.up) };
+        const float len2{ x * x + y * y };
+
+        clayborne::velocity result;
+        result.subpos_x = 0.0f;
+        result.subpos_y = 0.0f;
+
+        if (len2 == 0.0f) {
+            const int direction{ (player.facing == player::facing::right) - (player.facing == player::facing::left) };
+            result.x = static_cast<float>(direction) * player::head_throw_speed;
+            result.y = 0.0f;
+        }
+        else {
+            const float invlen{ (len2 == 2.0f) ? inv_sqrt2 : 1 };
+            result.x = x * invlen * player::head_throw_speed;
+            result.y = y * invlen * player::head_throw_speed;
+        }
+
+        return result;
+    }
+
+    template<typename F>
+    static void pay_debt(int &debt, clayborne::position &p, const float dx, const float dy, F &&f) {
+        while (debt > 0) {
+            auto next{ p };
+            next.x += dx;
+            next.y += dy;
+            if (f(next)) {
+                return;
+            }
+            p = next;
+            debt -= 1;
+        }
+    }
+
     void update_player(entt::entity player_entity, entt::registry &registry, const input::manager &inputs, Uint64 dt_ns) noexcept {
         const float delta_time{ static_cast<float>(static_cast<double>(dt_ns) / SDL_NS_PER_SECOND) };
 
@@ -141,11 +183,21 @@ namespace clayborne {
 
         // Check if grounded
         player.is_grounded = false;
-        if (velocity.y >= 0) {
+        if (velocity.y >= 0.0f) {
             auto below{ position };
             below.y += 1.0f;
             if (overlap_any(registry, player_entity, below, collider)) {
                 player.is_grounded = true;
+            }
+        }
+
+        // Check if standing on clay
+        player.is_on_clay = false;
+        if (player.is_grounded) {
+            auto below{ position };
+            below.y += 1.0f;
+            if (overlap_any<clayborne::clay>(registry, player_entity , below, collider)) {
+                player.is_on_clay = true;
             }
         }
 
@@ -277,119 +329,113 @@ namespace clayborne {
             if (is_buffered_head_action) {
                 player.head_buffer_timer = 0.0f;
 
-                // Throw head
+                // Bury or throw head
                 if (player.is_head_attached) {
-                    // Update player
-                    player.is_head_attached = false;
-                    player.state = player::state::throwing;
-                    player.head_throw_timer = player::head_throw_duration;
-                    velocity.y = 0.0f;
-                    position.y += player::hitbox_height - player::headless_hitbox_height;
-                    collider.h = player::headless_hitbox_height;
-                    renderer.dstrect.h = player::headless_hitbox_height;
+                    auto head_velocity{ compute_throw_velocity(player) };
 
-                    const float x{ static_cast<float>(player.right - player.left) };
-                    const float y{ static_cast<float>(player.down - player.up) };
-                    const float len2{ x * x + y * y };
-
-                    player.head = registry.create();
-                    registry.emplace<clayborne::head>(player.head);
-                    auto &head_position{ registry.emplace<clayborne::position>(player.head) };
-                    auto &head_velocity{ registry.emplace<clayborne::velocity>(player.head) };
-                    auto &head_collider{ registry.emplace<clayborne::collider>(player.head) };
-                    auto &head_renderer{ registry.emplace<clayborne::renderer>(player.head) };
-
-                    head_position = position;
-                    if (len2 == 0.0f) {
-                        const int direction{ (player.facing == player::facing::right) - (player.facing == player::facing::left) };
-                        head_velocity.x = static_cast<float>(direction) * head::throw_speed;
-                        head_velocity.y = 0.0f;
-                        head_position.x += static_cast<float>(direction) * player::hitbox_width;
+                    // Bury head
+                    if (player.is_on_clay && head_velocity.x == 0.0f && head_velocity.y > 0.0f) {
+                        log("head buried");
+                        player.is_head_attached = false;
+                        player.state = player::state::throwing;
+                        player.head_throw_timer = player::head_throw_duration;
+                        velocity.y = 0.0f;
+                        position.y += player::hitbox_height - player::headless_hitbox_height;
+                        collider.h = player::headless_hitbox_height;
+                        renderer.dstrect.h = player::headless_hitbox_height;
+                        // TODO: create the buried head entity
                     }
+                    // Throw head
                     else {
-                        const float invlen{ (len2 == 2.0f) ? inv_sqrt2 : 1 };
-                        head_velocity.x = x * invlen * head::throw_speed;
-                        head_velocity.y = y * invlen * head::throw_speed;
-                        head_position.x += x * player::hitbox_width;
-                        head_position.y += y * player::headless_hitbox_height;
-                    }
+                        clayborne::position new_position{ position };
+                        new_position.y += player::hitbox_height - player::headless_hitbox_height;
+                        clayborne::collider new_collider{ collider };
+                        new_collider.h = player::headless_hitbox_height;
 
-                    head_collider.w = head::hitbox_width;
-                    head_collider.h = head::hitbox_height;
-                    head_collider.collide = head_collision_handler;
-
-                    head_renderer.dstrect.w = head::hitbox_width;
-                    head_renderer.dstrect.h = head::hitbox_height;
-
-                    // Bury head in clay
-                    if (overlap_any<clayborne::clay>(registry, player.head, head_position, head_collider)) {
-                        registry.destroy(player.head);
-                        player.head = entt::null;
-                        // TODO: bury head properly
-                    }
-                    // Nudge head and player to valid position
-                    else if (overlap_any(registry, player.head, head_position, head_collider)) {
-                        head_position = position;
-
+                        clayborne::position head_position{ new_position };
+                        clayborne::collider head_collider{ head::hitbox_width, head::hitbox_height, head_collision_handler };
                         const float dir_x{ sgn(head_velocity.x) };
                         const float dir_y{ sgn(head_velocity.y) };
-
                         int debt_x = (dir_x != 0.0f) ? static_cast<int>(player::hitbox_width) : 0;
                         int debt_y = (dir_y != 0.0f) ? static_cast<int>(player::headless_hitbox_height) : 0;
 
-                        // Head pays x debt
-                        while (debt_x > 0) {
-                            auto next = head_position;
-                            next.x += dir_x;
-                            if (overlap_any(registry, player.head, next, head_collider, entt::exclude<clayborne::player>)) {
-                                break;
+                        // Throwing diagonally upwards prioritizes the y-axis
+                        if (dir_y < 0.0f) {
+                            // Move head out of player along the y-axis
+                            pay_debt(debt_y, head_position, 0.0f, dir_y, [&](const clayborne::position next) {
+                                return overlap_any(registry, entt::null, next, head_collider, entt::exclude<clayborne::player>);
+                            });
+                            // Move player out of head along the y-axis
+                            pay_debt(debt_y, new_position, 0.0f, -dir_y, [&](const clayborne::position next) {
+                                return overlap_any(registry, player_entity, next, new_collider, entt::exclude<clayborne::head>);
+                            });
+
+                            // Skip the x-axis movement if the y-axis movement was sufficient
+                            if (overlap(new_position, new_collider, head_position, head_collider)) {
+                                // Move head out of player along the x-axis
+                                pay_debt(debt_x, head_position, dir_x, 0.0f, [&](const clayborne::position next) {
+                                    return overlap_any(registry, entt::null, next, head_collider, entt::exclude<clayborne::player>);
+                                });
+
+                                // Move player out of head along the x-axis
+                                pay_debt(debt_x, new_position, -dir_x, 0.0f, [&](const clayborne::position next) {
+                                    return overlap_any(registry, player_entity, next, new_collider, entt::exclude<clayborne::head>);
+                                });
                             }
-                            head_position = next;
-                            --debt_x;
                         }
-
-                        // Head pays y debt
-                        while (debt_y > 0) {
-                            auto next = head_position;
-                            next.y += dir_y;
-                            if (overlap_any(registry, player.head, next, head_collider, entt::exclude<clayborne::player>)) {
-                                break;
-                            }
-                            head_position = next;
-                            --debt_y;
-                        }
-
-                        auto player_position{ position };
-
-                        // Player pays remaining x debt
-                        while (debt_x > 0) {
-                            auto next = player_position;
-                            next.x -= dir_x;
-                            if (overlap_any(registry, player_entity, next, collider, entt::exclude<clayborne::head>)) {
-                                break;
-                            }
-                            player_position = next;
-                            --debt_x;
-                        }
-
-                        // Player pays remaining y debt
-                        while (debt_y > 0) {
-                            auto next = player_position;
-                            next.y -= dir_y;
-                            if (overlap_any(registry, player_entity, next, collider, entt::exclude<clayborne::head>)) {
-                                break;
-                            }
-                            player_position = next;
-                            --debt_y;
-                        }
-
-                        if (debt_x <= 0 && debt_y <= 0) {
-                            position = player_position;
-                        }
+                        // Throwing diagonally downards prioritizes the x-axis
                         else {
+                            // Move head out of player along the x-axis
+                            pay_debt(debt_x, head_position, dir_x, 0.0f, [&](const clayborne::position next) {
+                                return overlap_any(registry, entt::null, next, head_collider, entt::exclude<clayborne::player>);
+                            });
+
+                            // Move player out of head along the x-axis
+                            pay_debt(debt_x, new_position, -dir_x, 0.0f, [&](const clayborne::position next) {
+                                return overlap_any(registry, player_entity, next, new_collider, entt::exclude<clayborne::head>);
+                            });
+
+                            // Skip the y-axis movement if the x-axis movement was sufficient
+                            if (overlap(new_position, new_collider, head_position, head_collider)) {
+                                // Move head out of player along the y-axis
+                                pay_debt(debt_y, head_position, 0.0f, dir_y, [&](const clayborne::position next) {
+                                    return overlap_any(registry, entt::null, next, head_collider, entt::exclude<clayborne::player>);
+                                });
+                                // Move player out of head along the y-axis
+                                pay_debt(debt_y, new_position, 0.0f, -dir_y, [&](const clayborne::position next) {
+                                    return overlap_any(registry, player_entity, next, new_collider, entt::exclude<clayborne::head>);
+                                });
+                            }
+                        }
+
+                        // Throw succeeded
+                        if (!overlap(new_position, new_collider, head_position, head_collider)) {
+                            log("throw succeded");
+                            player.is_head_attached = false;
+                            player.state = player::state::throwing;
+                            player.head_throw_timer = player::head_throw_duration;
+                            position = new_position;
+                            velocity.y = 0.0f;
+                            collider.h = player::headless_hitbox_height;
+                            renderer.dstrect.h = player::headless_hitbox_height;
+
+                            player.head = registry.create();
+                            registry.emplace<clayborne::head>(player.head);
+                            registry.emplace<clayborne::position>(player.head, head_position);
+                            registry.emplace<clayborne::velocity>(player.head, head_velocity);
+                            registry.emplace<clayborne::collider>(player.head, head_collider);
+                            auto &head_renderer{ registry.emplace<clayborne::renderer>(player.head) };
+                            head_renderer.dstrect.w = head::hitbox_width;
+                            head_renderer.dstrect.h = head::hitbox_height;
+                        }
+                        // Throw failed
+                        // We still enter the throw state, but the player keeps their head and aren't moved
+                        else {
+                            log("throw failed");
                             player.is_head_attached = true;
-                            registry.destroy(player.head);
-                            player.head = entt::null;
+                            player.state = player::state::throwing;
+                            player.head_throw_timer = player::head_throw_duration;
+                            velocity.y = 0.0f;
                         }
                     }
                 }
@@ -488,20 +534,14 @@ namespace clayborne {
         }
 
         // Regrow head
-        if (!player.is_head_attached && player.head == entt::null) {
-            if (player.is_grounded) { // this check is only for performance reasons
-                auto below{ position };
-                below.y += 1.0f;
-                if (overlap_any<clayborne::clay>(registry, player_entity , below, collider)) {
-                    auto above{ position };
-                    above.y -= 1.0f;
-                    if (!overlap_any(registry, player_entity , above, collider)) {
-                        player.is_head_attached = true;
-                        position.y -= player::hitbox_height - player::headless_hitbox_height;
-                        collider.h = player::hitbox_height;
-                        renderer.dstrect.h = player::hitbox_height;
-                    }
-                }
+        if (player.state == player::state::start && !player.is_head_attached && player.head == entt::null && player.is_on_clay) {
+            auto above{ position };
+            above.y -= 1.0f;
+            if (!overlap_any(registry, player_entity , above, collider)) {
+                player.is_head_attached = true;
+                position.y -= player::hitbox_height - player::headless_hitbox_height;
+                collider.h = player::hitbox_height;
+                renderer.dstrect.h = player::hitbox_height;
             }
         }
 

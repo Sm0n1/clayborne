@@ -109,7 +109,8 @@ namespace clayborne {
         // States & Flags //
         // -------------- //
 
-        bool is_grounded{ true }; //
+        bool is_grounded{ false }; //
+        bool is_on_clay{ false }; // False if not grounded
         bool is_head_attached{ true }; //
         facing facing{ facing::right }; //
         state state{ state::start }; //
@@ -147,7 +148,7 @@ namespace clayborne {
         static constexpr float explosion_radius{ 14.0f };
         static constexpr float explosion_speed{ 400.0f };
 
-        bool is_grounded{ true };
+        bool is_grounded{ false };
         bool is_thrown{ true };
         bool is_detonated{ false };
     };
