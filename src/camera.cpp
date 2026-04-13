@@ -9,7 +9,6 @@
 #include <entt/entt.hpp>
 #include "camera.hpp"
 #include "physics.hpp"
-#include "utils.hpp"
 
 namespace clayborne {
     // TODO: match destination rectangle with window

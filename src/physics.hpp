@@ -71,8 +71,6 @@ namespace clayborne {
         }
         return false;
     }
-
-
 }
 
 #endif // CLAYBORNE_PHYSICS_HPP
