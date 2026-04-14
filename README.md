@@ -33,7 +33,7 @@ All header files should contain a header guard of the following form:
 
 #### Variable Initialization
 
-Prefer brace-initialization over initializing with `=`.
+Prefer brace-initialization over initializing with `=`. `=` should only be used for copy assignment.
 
 ```cpp
 int x{ 0 };
@@ -69,12 +69,12 @@ Always use curly braces for bodies, even if they only contain a single statement
 #### Functions
 
 ```cpp
-constexpr void foo_bar(int arg1, int arg2) {
+constexpr void foo_bar(int arg1, const int arg2) noexcept {
     return 0;
 }
 ```
 
-If possible, mark functions as `constexpr`.
+If possible, mark functions as `constexpr` and `noexcept`. Arguments that can be marked `const` should be.
 
 #### Polymorhism
 
@@ -96,7 +96,6 @@ Avoid exceptions if possible. Use `std::optional` and `std::expecting` instead. 
 
 # Building
 
-If you want to use a vendored SDL3, use the following command:
-```sh
-cmake .. -D CLAYBORNE_VENDORED=ON
-```
+If you want to use a vendored SDL3, use the `-DCLAYBORNE_VENDORED=ON` flag when running cmake.
+
+For SDL_image to compile you may need to use the `-DSDLIMAGE_VENDORED=OFF` flag when running cmake.
