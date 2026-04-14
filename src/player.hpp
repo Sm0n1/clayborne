@@ -8,30 +8,6 @@
 #include "engine/input/manager.hpp"
 #include "resources.hpp"
 
-// HEAD MECHANIC
-//
-// Edge case 1: 
-//     If the player is partially under ceiling, then reattachment should not be possible.
-//     If possible, the player and/or the head should be moved to the side.
-//     If no movement is possible, then the head should be destroyed.
-// 
-// Edge case 2:
-//     If the player throws the head against an surface they are close to,
-//     then the player should be pushed away to accomodate the head collider.
-//     If this is not possible, then the head should not be thrown.
-//
-// Edge case 3:
-//     If there is clay in a one-block tall corridor, then the head should not be able to
-//     regrow in order to not trap the player within the ceiling.
-//
-// Edge case 4:
-//     ...
-//
-//
-//
-// Throwing the head should throw it at the height of the head.
-// Throwing the head should stall the player in the air for a moment.
-
 namespace clayborne {
     struct player {
         // ------------------------ //

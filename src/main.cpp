@@ -45,7 +45,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     }
 
     // Initialize window
-    gs.window = SDL_CreateWindow("Clayborne", 640, 360, SDL_WINDOW_RESIZABLE);
+    gs.window = SDL_CreateWindow("Clayborne", 1280, 720, SDL_WINDOW_RESIZABLE);
     if (!gs.window) {
         SDL_Log("SDL create window failed: %s", SDL_GetError());
         return SDL_APP_FAILURE;
@@ -94,7 +94,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
 
     std::ifstream file("data/levels/tiles.csv");
     if (!file) {
-        SDL_Log("file stream failed to open: %s", strerror(errno));
+        SDL_Log("file stream failed to open");
         return SDL_APP_FAILURE;
     }
 
@@ -228,9 +228,9 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result) {
     SDL_DestroyWindow(gs.window);
 
     switch (result) {
-    // case SDL_APP_SUCCESS: std::println("App Success"); break;
-    // case SDL_APP_FAILURE: std::println("App Failure"); break;
-    // case SDL_APP_CONTINUE: std::unreachable();
+    case SDL_APP_SUCCESS: [[fallthrough]]; // std::println("App Success"); break;
+    case SDL_APP_FAILURE: [[fallthrough]]; // std::println("App Failure"); break;
+    case SDL_APP_CONTINUE: [[fallthrough]]; // std::unreachable();
     default:
         break;
     }
