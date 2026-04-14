@@ -99,3 +99,9 @@ Avoid exceptions if possible. Use `std::optional` and `std::expecting` instead. 
 If you want to use a vendored SDL3, use the `-DCLAYBORNE_VENDORED=ON` flag when running cmake.
 
 For SDL_image to compile you may need to use the `-DSDLIMAGE_VENDORED=OFF` flag when running cmake.
+
+1. Navigate to root directory
+2. Run `cmake -B build -DCLAYBORNE_VENDORED=ON -DSDLIMAGE_VENDORED=OFF`
+3. Run `cmake --build build`
+
+If using MSVC on Windows, then the executable should be `.\build\Debug\clayborne.exe`. If using Clang of GCC on Linux, then it should be `./build/clayborne`.
