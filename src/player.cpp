@@ -11,6 +11,7 @@
 #include "camera.hpp"
 #include "clay.hpp"
 #include "utils.hpp"
+#include "resources.hpp"
 
 namespace clayborne {
     template<bool X, int Amount>
@@ -42,6 +43,28 @@ namespace clayborne {
         }
 
         return false;
+    }
+
+    // TODO perhaps change magic numbers to header consts or something.
+    static void set_player_tall(bool tall, clayborne::renderer &renderer) {
+        if (tall) {
+            renderer.srcrect.w = player::hitbox_width;
+            renderer.srcrect.h = player::hitbox_height + 5.0f;
+            renderer.srcrect.x = 4.0f;
+            renderer.srcrect.y = 0.0f;
+            renderer.dstrect.w = renderer.srcrect.w;
+            renderer.dstrect.h = renderer.srcrect.h;
+            renderer.dstrect.y = -5.0f;
+        }
+        else {
+            renderer.srcrect.w = player::hitbox_width;
+            renderer.srcrect.h = player::headless_hitbox_height;
+            renderer.srcrect.x = 4.0f;
+            renderer.srcrect.y = 8.0f;
+            renderer.dstrect.w = renderer.srcrect.w;
+            renderer.dstrect.h = renderer.srcrect.h;
+            renderer.dstrect.y = 0.0f;
+        }
     }
 
     static void player_collision_handler(entt::registry &registry, const collider::collision &collision) noexcept {
@@ -101,7 +124,7 @@ namespace clayborne {
             // Update player shape
             position.y -= player::hitbox_height - player::headless_hitbox_height;
             collider.h = player::hitbox_height;
-            renderer.dstrect.h = player::hitbox_height;
+            set_player_tall(true, renderer);
         }
 
         if (player.state == player::state::launched) {
@@ -223,7 +246,9 @@ namespace clayborne {
         }
     }
 
-    entt::entity init_player(entt::registry &registry, float x, float y) noexcept {
+    
+
+    entt::entity init_player(entt::registry &registry, clayborne::resources &resources, float x, float y) noexcept {
         auto player_entity{ registry.create() };
 
         registry.emplace<player>(player_entity);
@@ -236,8 +261,9 @@ namespace clayborne {
         collider.collide = player_collision_handler;
 
         auto &renderer{ registry.emplace<clayborne::renderer>(player_entity) };
-        renderer.dstrect.w = player::hitbox_width;
-        renderer.dstrect.h = player::hitbox_height;
+        renderer.texture = resources.spritesheet;
+
+        set_player_tall(true, renderer);
         
         return player_entity;
     }
@@ -444,7 +470,7 @@ namespace clayborne {
                         velocity.y = 0.0f;
                         position.y += player::hitbox_height - player::headless_hitbox_height;
                         collider.h = player::headless_hitbox_height;
-                        renderer.dstrect.h = player::headless_hitbox_height;
+                        set_player_tall(false, renderer);
                         // TODO: create the buried head entity
                     }
                     // Throw head
@@ -519,7 +545,7 @@ namespace clayborne {
                             position = new_position;
                             velocity.y = 0.0f;
                             collider.h = player::headless_hitbox_height;
-                            renderer.dstrect.h = player::headless_hitbox_height;
+                            set_player_tall(false, renderer);
 
                             player.head = registry.create();
                             auto &head{ registry.emplace<clayborne::head>(player.head) };
@@ -528,7 +554,12 @@ namespace clayborne {
                             registry.emplace<clayborne::position>(player.head, head_position);
                             registry.emplace<clayborne::velocity>(player.head, head_velocity);
                             registry.emplace<clayborne::collider>(player.head, head_collider);
+                          
                             auto &head_renderer{ registry.emplace<clayborne::renderer>(player.head) };
+                            head_renderer.texture = renderer.texture;
+                            head_renderer.srcrect.w = head::hitbox_width;
+                            head_renderer.srcrect.h = head::hitbox_height;
+                            head_renderer.srcrect.x = 4.0f;
                             head_renderer.dstrect.w = head::hitbox_width;
                             head_renderer.dstrect.h = head::hitbox_height;
                         }
@@ -643,7 +674,7 @@ namespace clayborne {
                 player.is_head_attached = true;
                 position.y -= player::hitbox_height - player::headless_hitbox_height;
                 collider.h = player::hitbox_height;
-                renderer.dstrect.h = player::hitbox_height;
+                set_player_tall(true, renderer);
             }
         }
 
