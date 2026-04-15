@@ -190,7 +190,7 @@ namespace clayborne {
 
         auto level_entity{ registry.create() };
         registry.emplace<position>(level_entity, static_cast<float>(level_x), static_cast<float>(level_y));
-        registry.emplace<clayborne::renderer>(level_entity, level_sprite, SDL_FRect{ 0.0f, 0.0f, 320.0f, 180.0f }, SDL_FRect{ 0.0f, 0.0f, 320.0f, 180.0f }, -1);
+        registry.emplace<clayborne::renderer>(level_entity, level_sprite, SDL_FRect{ 0.0f, 0.0f, 320.0f, 184.0f }, SDL_FRect{ 0.0f, 0.0f, 320.0f, 184.0f }, -1);
 
         return {};
     }

@@ -106,7 +106,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
     auto &gs{ *static_cast<gamestate*>(appstate) };
     auto &player{ gs.registry.get<clayborne::player>(gs.player) };
-    auto &campos{ gs.registry.get<clayborne::position>(gs.camera) };
 
     switch (event->type) {
     case SDL_EVENT_QUIT: [[fallthrough]];
@@ -130,10 +129,6 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
         case SDL_SCANCODE_A: player.left = true; break;
         case SDL_SCANCODE_S: player.down = true; break;
         case SDL_SCANCODE_D: player.right = true; break;
-        case SDL_SCANCODE_UP: campos.y -= 184.0f; break;
-        case SDL_SCANCODE_DOWN: campos.y += 184.0f; break;
-        case SDL_SCANCODE_LEFT: campos.x -= 320.0f; break;
-        case SDL_SCANCODE_RIGHT: campos.x += 320.0f; break;
         // ------------------------ //
         default:
             break;
@@ -175,7 +170,8 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
         clayborne::update_player(gs.player, gs.registry, gs.inputs, SDL_NS_PER_SECOND / 60);
         clayborne::update_physics(gs.registry, SDL_NS_PER_SECOND / 60);
         clayborne::sense(gs.registry);
-        clayborne::call(clayborne::toggle_doors, gs.registry);
+        clayborne::toggle_doors(gs.registry);
+        clayborne::camera_player_follow(gs.camera, gs.player, gs.registry);
         gs.accumulated_time -= SDL_NS_PER_SECOND / 60;
     }
 

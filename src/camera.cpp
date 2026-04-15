@@ -71,4 +71,20 @@ namespace clayborne {
         SDL_RenderTexture(renderer, canvas, nullptr, nullptr);
         SDL_RenderPresent(renderer);
     }
+
+    void camera_player_follow(const entt::entity camera, const entt::entity player, entt::registry &registry) {
+        auto &camera_position{ registry.get<position>(camera) };
+        auto &player_position{ registry.get<const position>(player) };
+        auto &player_collider{ registry.get<const collider>(player) };
+
+        // If player's collider is fully outside the camera,
+        // then set the camera position to the player's current room.
+
+        collider temporary_camera_collider{ .w = 320.0f, .h = 184.0f, .collide = nullptr };
+
+        if (!overlap(camera_position, temporary_camera_collider, player_position, player_collider)) {
+            camera_position.x = std::floor(player_position.x / 320.0f) * 320.0f;
+            camera_position.y = std::floor(player_position.y / 184.0f) * 184.0f;
+        }
+    }
 }
