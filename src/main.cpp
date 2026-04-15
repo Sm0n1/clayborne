@@ -16,6 +16,7 @@
 #include "resources.hpp"
 #include "clay.hpp"
 #include "interactables.hpp"
+#include "level_loader.hpp"
 
 struct gamestate {
     SDL_Window *window{ nullptr };
@@ -82,57 +83,12 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     // Initialize player
     gs.player = clayborne::init_player(gs.registry, gs.resources, 70.0f, 140.0f);
 
-    // Quick and dirty ldtk super simple level format reader
-    // TODO: move this to its own file
-    SDL_Texture *level_sprite{ IMG_LoadTexture(gs.renderer, "data/levels/sprite.png") };
-    if (!level_sprite) {
-        SDL_Log("IMG load texture failed: %s", SDL_GetError());
+    // Initialize starting level
+    auto level_load_result{ clayborne::load_level("data/levels/Level_0", gs.registry, gs.renderer) };
+    if (!level_load_result) {
+        std::println("{}", level_load_result.error());
         return SDL_APP_FAILURE;
     }
-    auto level{ gs.registry.create() };
-    gs.registry.emplace<clayborne::position>(level, 0.0f, 0.0f);
-    gs.registry.emplace<clayborne::renderer>(level, level_sprite, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 320.0f, .h = 180.0f }, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = 320.0f, .h = 180.0f }, -1);
-
-    std::ifstream file("data/levels/tiles.csv");
-    if (!file) {
-        SDL_Log("file stream failed to open");
-        return SDL_APP_FAILURE;
-    }
-
-    auto sensor{ clayborne::create_sensor(gs.registry, 70.0f, 168.0f) };
-    std::string line;
-
-    float x{0};
-    float y{0};
-
-    float tile_size{ 8.0f };
-
-    while (getline(file, line, ',')) {
-        line.erase(std::remove(line.begin(), line.end(), '\n'), line.end());
-        line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
-
-        if (line == "1") {
-            auto tile{ gs.registry.create() };
-            gs.registry.emplace<clayborne::position>(tile, x * tile_size, y * tile_size);
-            gs.registry.emplace<clayborne::collider>(tile, tile_size, tile_size);
-            if (y >= 22) {
-                gs.registry.emplace<clayborne::clay>(tile);
-            }
-            //gs.registry.emplace<clayborne::renderer>(tile, nullptr, SDL_FRect{}, SDL_FRect{ .x = 0.0f, .y = 0.0f, .w = tile_size, .h = tile_size });
-        }
-        else if (line == "2") {
-            (void)clayborne::create_door(gs.registry, x * tile_size, y * tile_size, false, sensor);
-        }
-
-        if (line == "0" ||  line == "1" || line == "2") {
-            x = x + 1;
-            if (x >= 40) {
-                x = 0;
-                y = y + 1;
-            }
-        }
-    }
-    // end of level loader
     
     // Initialize timer
     gs.current_time = SDL_GetTicksNS();
@@ -210,7 +166,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
         clayborne::update_player(gs.player, gs.registry, gs.inputs, SDL_NS_PER_SECOND / 60);
         clayborne::update_physics(gs.registry, SDL_NS_PER_SECOND / 60);
         clayborne::sense(gs.registry);
-        clayborne::toggle_doors(gs.registry);
+        clayborne::call(clayborne::toggle_doors, gs.registry);
         gs.accumulated_time -= SDL_NS_PER_SECOND / 60;
     }
 
