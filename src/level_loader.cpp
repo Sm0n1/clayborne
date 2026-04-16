@@ -223,6 +223,9 @@ namespace clayborne {
             if (!result) {
                 return result;
             }
+            else {
+                println("Loaded " + level.path().string());
+            }
         }
 
         return {};
