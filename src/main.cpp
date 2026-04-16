@@ -69,7 +69,6 @@ try {
     // Enable automatic scaling
     SDL_SetRenderLogicalPresentation(gs.renderer, 320, 180, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
     
-
     // Initialize canvas
     gs.canvas = SDL_CreateTexture(gs.renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 320, 180);
     if (!gs.canvas) {
@@ -106,13 +105,13 @@ try {
     return SDL_APP_CONTINUE;
 
 } catch (const std::exception& e) {
-    std::cerr << "std::exception: " << e.what() << '\n';
+    std::println("std::exception: {}", e.what());
     return SDL_APP_FAILURE;
 } catch (const char* e) {
-    std::cerr << "const char*: " << e << '\n';
+    std::println("const char*: {}", e);
     return SDL_APP_FAILURE;
 } catch (...) {
-    std::cerr << "Unknown exception\n";
+    std::println("Unknown exception");
     return SDL_APP_FAILURE;
 }
 }
