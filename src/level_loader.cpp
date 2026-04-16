@@ -136,6 +136,7 @@ namespace clayborne {
         constexpr int clay_tile{ 2 };
         constexpr int lava_tile{ 3 };
 
+        std::println("...load level position");
         const int level_x{ data["x"] };
         const int level_y{ data["y"] };
 
@@ -171,6 +172,7 @@ namespace clayborne {
             }
         }
 
+        std::println("...load entities");
         const auto entities{ data["entities"] };
         for (auto& [entity_name, entity_list] : entities.items()) {
             if (entity_name == "Player") {
