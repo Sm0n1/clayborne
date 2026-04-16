@@ -1,6 +1,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_timer.h>
 #include <algorithm>
+#include <print>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -249,13 +250,40 @@ namespace clayborne {
         }
     }
 
+    static void respawn_player(entt::registry &registry, player &p, position &pos, velocity &vel) noexcept {
+        p.state = player::state::start;
+        vel.x = 0.0f;
+        vel.y = 0.0f;
+
+        // Respawn on head if it is on clay
+        if (p.head != entt::null) {
+            auto head_position{ registry.get<const position>(p.head) };
+            auto head_collider{ registry.get<const collider>(p.head) };
+            auto below{ head_position };
+            below.y += 1.0f;
+            if (overlap_any<clay>(registry, p.head, below, head_collider)) {
+                registry.destroy(p.head);
+                p.head = entt::null;
+                pos.x = head_position.x;
+                pos.y = head_position.y;
+                return;
+            }
+        }
+        
+        pos.x = p.respawn_x;
+        pos.y = p.respawn_y;
+    }
+
     entt::entity init_player(entt::registry &registry, clayborne::resources &resources, float x, float y) noexcept {
         auto player_entity{ registry.create() };
 
-        registry.emplace<player>(player_entity);
+        auto &player_player{ registry.emplace<player>(player_entity) };
+        player_player.respawn_x = x;
+        player_player.respawn_y = y;
+
         registry.emplace<position>(player_entity, x, y);
         registry.emplace<velocity>(player_entity);
-        registry.emplace<activator>(player_entity, player::hitbox_width, player::hitbox_width);
+        registry.emplace<activator>(player_entity, player::hitbox_width, player::hitbox_height);
 
         auto &collider{ registry.emplace<clayborne::collider>(player_entity) };
         collider.w = player::hitbox_width;
@@ -289,6 +317,10 @@ namespace clayborne {
         // Update States, Flags & Timers //
         // ----------------------------- //
 
+        if (player.state == player::state::dead) {
+            respawn_player(registry, player, position, velocity);
+        }
+
         // Check if grounded
         player.is_grounded = false;
         if (velocity.y >= 0.0f) {
@@ -306,6 +338,8 @@ namespace clayborne {
             below.y += 1.0f;
             if (overlap_any<clayborne::clay>(registry, player_entity , below, collider)) {
                 player.is_on_clay = true;
+                player.respawn_x = position.x;
+                player.respawn_y = position.y;
             }
         }
 

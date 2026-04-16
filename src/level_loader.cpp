@@ -150,8 +150,12 @@ namespace clayborne {
             case lava_tile: {
                 auto tile{ registry.create() };
                 registry.emplace<position>(tile, level_x + tg.x * 8.0f, level_y + tg.y * 8.0f);
-                registry.emplace<collider>(tile, tg.w * 8.0f, tg.h * 8.0f);
-                // TODO: implement death
+                registry.emplace<collider>(tile, tg.w * 8.0f, tg.h * 8.0f, [](entt::registry &r, const collider::collision &c) {
+                    auto p{ r.try_get<player>(c.other) };
+                    if (p) {
+                        p->state = player::state::dead;
+                    }
+                });
                 break;
             }
             default:
