@@ -112,14 +112,20 @@ namespace clayborne {
                     comma -= 1;
                 }
 
+                // std::uint8_t tile{ 0 };
+                // auto [ptr, ec] = std::from_chars(start, comma, tile);
+                //
+                // if (ec != std::errc{}) {
+                //     return std::unexpected("Failed to parse " + grid_path.string() + ": invalid integer");
+                // }
                 std::uint8_t tile{ 0 };
-                int temp{ 0 };
-                auto [ptr, ec] = std::from_chars(start, comma, temp);
-                tile = static_cast<std::uint8_t>(temp);
-
-                if (ec != std::errc{}) {
+                std::string temp_s(start, comma);
+                char* temp_end = nullptr;
+                unsigned long value = std::strtoul(temp_s.c_str(), &temp_end, 10);
+                if (temp_end != temp_s.c_str() + temp_s.size() || value > 255) {
                     return std::unexpected("Failed to parse " + grid_path.string() + ": invalid integer");
                 }
+                tile = static_cast<std::uint8_t>(value);
 
                 tiles[row][col] = tile;
                 start = (comma < end) ? comma + 1 : comma;
