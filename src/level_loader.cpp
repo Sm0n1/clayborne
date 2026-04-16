@@ -219,13 +219,11 @@ namespace clayborne {
                 continue;
             }
 
+            println("Load level...({})", level.path().string());
+
             const auto result{ load_level(level.path(), registry, renderer) };
             if (!result) {
-                println("Failed loading {}", level.path().string());
                 return result;
-            }
-            else {
-                println("Loaded {}", level.path().string());
             }
         }
 
