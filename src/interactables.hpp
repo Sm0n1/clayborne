@@ -2,8 +2,6 @@
 #define CLAYBORNE_INTERACTABLES_HPP
 
 #include <entt/entt.hpp>
-#include "physics.hpp"
-#include "camera.hpp"
 
 namespace clayborne {
     struct sensor {
