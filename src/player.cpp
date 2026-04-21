@@ -283,6 +283,7 @@ namespace clayborne {
         registry.emplace<position>(player_entity, x, y);
         registry.emplace<velocity>(player_entity);
         registry.emplace<activator>(player_entity, player::hitbox_width, player::hitbox_height);
+        registry.emplace<light_source>(player_entity);
 
         auto &collider{ registry.emplace<clayborne::collider>(player_entity) };
         collider.w = player::hitbox_width;
@@ -649,7 +650,7 @@ namespace clayborne {
                             { inv_sqrt2, -inv_sqrt2 },
                         };
                         const float angle = std::atan2(delta_y, delta_x);
-                        const int octant = static_cast<int>(std::round(angle / (pi / 4.0f))) & 7;
+                        const int octant = static_cast<int>(std::round(angle / static_cast<float>(pi / 4.0))) & 7;
                         velocity.x = directions[octant].x * player::head_launch_speed;
                         velocity.y = directions[octant].y * player::head_launch_speed;
                         player.state = player::state::launched;

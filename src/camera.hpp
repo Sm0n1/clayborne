@@ -18,6 +18,9 @@ namespace clayborne {
         int z{ 0 };
     };
 
+    struct light_source {};
+    struct light_blocker {};
+
     entt::entity init_camera(entt::registry &registry);
     void deinit_camera(const entt::entity camera, entt::registry &registry);
     void render(const entt::entity camera, const entt::registry &registry, SDL_Renderer *renderer, SDL_Texture *canvas);

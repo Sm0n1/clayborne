@@ -144,6 +144,7 @@ namespace clayborne {
                 auto tile{ registry.create() };
                 registry.emplace<position>(tile, level_x + tg.x * 8.0f, level_y + tg.y * 8.0f);
                 registry.emplace<collider>(tile, tg.w * 8.0f, tg.h * 8.0f);
+                registry.emplace<light_blocker>(tile);
                 break;
             }
             case clay_tile: {
@@ -151,6 +152,7 @@ namespace clayborne {
                 registry.emplace<position>(tile, level_x + tg.x * 8.0f, level_y + tg.y * 8.0f);
                 registry.emplace<collider>(tile, tg.w * 8.0f, tg.h * 8.0f);
                 registry.emplace<clay>(tile);
+                registry.emplace<light_blocker>(tile);
                 break;
             }
             case lava_tile: {

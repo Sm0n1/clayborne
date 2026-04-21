@@ -9,9 +9,9 @@
 
 namespace clayborne {
     constexpr float inv_sqrt2{ 0.70710678f };
-    constexpr float pi{ 3.14159265358979323846f };
+    constexpr double pi{ 3.14159265358979323846 };
 
-    inline void log(const char* msg, const std::source_location loc = std::source_location::current()) {
+    inline void log(const char* msg = "", const std::source_location loc = std::source_location::current()) {
         std::cout << loc.line() << " " << msg << std::endl;
     }
 
