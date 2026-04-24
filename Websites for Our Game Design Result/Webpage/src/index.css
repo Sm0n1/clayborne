@@ -1,0 +1,28 @@
+
+html {
+  scroll-behavior: smooth;
+}
+
+.app {
+  min-height: 100vh;
+}
+
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: var(--font-retro);
+  font-size: 20px;
+  line-height: 1.6;
+  min-height: 100vh;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}

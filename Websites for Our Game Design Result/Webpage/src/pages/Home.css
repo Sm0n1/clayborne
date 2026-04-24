@@ -1,0 +1,129 @@
+/* BACKGROUND */
+.home-container {
+  background: linear-gradient(to bottom, #0f172a, #020617);
+  color: white;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+/* HERO */
+.hero {
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.game-title {
+  font-size: 64px;
+  font-weight: bold;
+  letter-spacing: 4px;
+}
+
+.tagline {
+  font-size: 18px;
+  opacity: 0.8;
+  margin-top: 10px;
+}
+
+/* HERO BUTTONS */
+.hero-buttons {
+  margin-top: 30px;
+}
+
+.primary-btn {
+  background: #22c55e;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.secondary-btn {
+  background: transparent;
+  border: 1px solid white;
+  padding: 12px 24px;
+  color: white;
+  cursor: pointer;
+}
+
+/* NAV */
+.nav-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  border-bottom: 1px solid #334155;
+  padding: 15px;
+}
+
+.tab {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.tab.active {
+  color: white;
+  border-bottom: 2px solid #22c55e;
+}
+
+/* CONTENT */
+.content {
+  max-width: 900px;
+  margin: auto;
+  padding: 40px 20px;
+}
+
+.section {
+  margin-bottom: 60px;
+}
+
+.section h2 {
+  margin-bottom: 10px;
+}
+
+/* DEMO BOX */
+.demo-box {
+  height: 200px;
+  background: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+}
+
+/* PLAY BUTTON */
+.play-big-btn {
+  background: #22c55e;
+  padding: 16px 32px;
+  font-size: 18px;
+  border: none;
+  cursor: pointer;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.profile-card {
+  background: #1e293b;
+  padding: 20px;
+  text-align: center;
+  border-radius: 10px;
+  transition: transform 0.2s;
+}
+
+.profile-card:hover {
+  transform: translateY(-5px);
+}
+
+.profile-card img {
+  width: 100%;
+  max-width: 100px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}

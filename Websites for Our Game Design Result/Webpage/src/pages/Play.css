@@ -1,0 +1,14 @@
+.play-page {
+  padding: 4rem 2rem;
+}
+
+.play-container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+@media (max-width: 560px) {
+  .req-grid {
+    grid-template-columns: 1fr;
+  }
+}
