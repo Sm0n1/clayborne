@@ -291,12 +291,17 @@ namespace clayborne {
         collider.collide = player_collision_handler;
 
         auto &renderer{ registry.emplace<clayborne::renderer>(player_entity) };
-        renderer.texture = SDL_CreateTextureFromSurface(r, IMG_Load("data/temp.png"));
+        renderer.texture = SDL_CreateTextureFromSurface(r, IMG_Load("data/player_sprites/idle_full/spritesheet.png"));
+
+        auto& animation_set{ registry.emplace<clayborne::animation_set>(player_entity) };
+        animation_set.animators[entt::hashed_string("idle_full")] = animations.load(entt::hashed_string("player_idle_full"), "data/player_sprites/idle_full/spritesheet.json").first->second;
 
         auto &animator{ registry.emplace<clayborne::animator>(player_entity) };
-        animator.resource = animations.load(entt::hashed_string("temp"), "data/temp.json").first->second;
+        animator.resource = animation_set.animators[entt::hashed_string("idle_full")];
         animator.current_frame = 0;
         animator.is_looping = true;
+
+        
 
         set_player_tall(true, renderer);
         

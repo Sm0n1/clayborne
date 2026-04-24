@@ -61,6 +61,10 @@ namespace clayborne {
         bool is_looping;
     };
 
+    struct animation_set {
+        std::unordered_map<entt::id_type, entt::resource<animation_resource>> animators;
+    };
+
     void animate(entt::registry &registry);
 }
 

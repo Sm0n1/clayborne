@@ -9,7 +9,16 @@ namespace clayborne {
                 continue;
             }
 
+            //SDL_Log("Total frames: %d", static_cast<int>(a.resource->frames.size()));
+            //SDL_Log("Current frame: %d", static_cast<int>(a.current_frame));
+
             const auto &animation{ a.resource->frames };
+            a.current_frame++;
+            if (a.current_frame >= animation.size() && a.is_looping) {
+                a.current_frame = 0;
+            }
+            // If a isn't a looping animation, its entity should have already been destroyed by now?
+
             const auto frame{ animation[a.current_frame] };
 
             r.srcrect.x = frame.x;
