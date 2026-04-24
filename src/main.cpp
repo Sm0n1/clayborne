@@ -28,7 +28,10 @@ struct gamestate {
     clayborne::resources resources;
     bool is_fullscreen{ false };
 
-    clayborne::animation_cache animations{};
+
+    clayborne::texture_cache textures{};
+    clayborne::animation_loader loader{ &textures };
+    clayborne::animation_cache animations{ loader };
 
     clayborne::input::manager inputs;
 };

@@ -4,7 +4,7 @@
 
 namespace clayborne {
 	clayborne::resources init_resources(SDL_Renderer *renderer) {
-		auto surface{ IMG_Load("data/player_sprites/idle_full.png") };
+		auto surface{ IMG_Load("data/player_sprites/idle_full/spritesheet.png") };
 		if (!surface) {
 			SDL_Log("Could not load image: %s", SDL_GetError());
 		}
