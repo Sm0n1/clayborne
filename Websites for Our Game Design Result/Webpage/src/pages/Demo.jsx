@@ -6,9 +6,9 @@ function Demo() {
   const [active, setActive] = useState(1);
 
   return (
-     <div className="section">
-      <h2>Demo</h2>
-      <div>Demo video here</div>
+     <div className = "pageTitle">
+      <h2 className = "about-text">Demo</h2>
+      <div className = "about-text">Demo video here</div>
     </div>
 
   );

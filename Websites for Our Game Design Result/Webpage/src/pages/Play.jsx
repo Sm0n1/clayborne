@@ -4,8 +4,8 @@ import './Play.css';
 function Play() {
 
   return (
-    <div>
-      <h2>Play</h2>
+    <div className = "pageTitle">
+      <h2 className = "about-text">Play</h2>
       <button>Launch Game</button>
     </div>
   );

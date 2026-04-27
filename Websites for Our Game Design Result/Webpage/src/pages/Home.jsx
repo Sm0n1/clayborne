@@ -41,7 +41,7 @@ function Home() {
       <section className="content">
 
   {activeTab === 0 && (
-    <div className="section">
+    <div className = "pageTitle">
       <h2>Welcome</h2>
       <p>Welcome to Clayborne, our game project.</p>
         {/* TEAM*/}
