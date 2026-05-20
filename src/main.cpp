@@ -307,13 +307,13 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
     // ------------------------ //
     case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
         switch (event->gbutton.button) {
-        case SDL_GAMEPAD_BUTTON_LABEL_A:
-        case SDL_GAMEPAD_BUTTON_LABEL_Y:
+        case SDL_GAMEPAD_BUTTON_NORTH:
+        case SDL_GAMEPAD_BUTTON_SOUTH:
             player.jump_just_pressed = true;
             player.jump_pressed = true;
             break;
-        case SDL_GAMEPAD_BUTTON_LABEL_B:
-        case SDL_GAMEPAD_BUTTON_LABEL_X:
+        case SDL_GAMEPAD_BUTTON_EAST:
+        case SDL_GAMEPAD_BUTTON_WEST:
             player.head_just_pressed = true;
             player.head_pressed = true;
             break;
@@ -333,12 +333,12 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
         break;
     case SDL_EVENT_GAMEPAD_BUTTON_UP:
         switch (event->gbutton.button) {
-        case SDL_GAMEPAD_BUTTON_LABEL_A:
-        case SDL_GAMEPAD_BUTTON_LABEL_Y:
+        case SDL_GAMEPAD_BUTTON_NORTH:
+        case SDL_GAMEPAD_BUTTON_SOUTH:
             player.jump_pressed = false;
             break;
-        case SDL_GAMEPAD_BUTTON_LABEL_B:
-        case SDL_GAMEPAD_BUTTON_LABEL_X:
+        case SDL_GAMEPAD_BUTTON_EAST:
+        case SDL_GAMEPAD_BUTTON_WEST:
             player.head_pressed = false;
             break;
         case SDL_GAMEPAD_BUTTON_DPAD_UP:
