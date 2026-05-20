@@ -1,3 +1,4 @@
+#include "death.hpp"
 #include "head.hpp"
 #include "player.hpp"
 #include "physics.hpp"
@@ -120,7 +121,13 @@ namespace clayborne {
         if (velocity.y >= 0) {
             auto below{ position };
             below.y += 1.0f;
-            if (overlap_any(registry, entity, below, collider)) {
+            if (overlap_any(
+                registry,
+                entity,
+                below,
+                collider,
+                entt::exclude<struct death>
+            )) {
                 head.is_grounded = true;
             }
         }
