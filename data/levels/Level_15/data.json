@@ -1,46 +1,41 @@
 {
 	"identifier": "Level_15",
-	"uniqueIdentifer": "6a83e6a0-21a0-11f1-92a0-d3709a0a168b",
+	"uniqueIdentifer": "8c3f6b50-48b0-11f1-b87a-a1966226134f",
 	"x": 0,
-	"y": -736,
+	"y": -184,
 	"width": 320,
 	"height": 184,
 	"bgColor": "#696A79",
 	"neighbourLevels": [
 		{
-			"levelIid": "2297f400-21a0-11f1-92a0-711a5d02a899",
-			"dir": "sw"
+			"levelIid": "fd95cc70-21a0-11f1-97ad-f16fef0c83a8",
+			"dir": "e"
 		},
 		{
-			"levelIid": "ce4c1970-21a0-11f1-92a0-51d598a20f4c",
-			"dir": "w"
+			"levelIid": "bc9e8e80-21a0-11f1-92a0-d7f47e982b9d",
+			"dir": "ne"
 		},
 		{
-			"levelIid": "c02103e0-21a0-11f1-92a0-1d8a8069dbc9",
+			"levelIid": "7facfc30-21a0-11f1-92a0-27a8165637c0",
+			"dir": "n"
+		},
+		{
+			"levelIid": "4b827580-48b0-11f1-bdce-c104cbf4459a",
+			"dir": "se"
+		},
+		{
+			"levelIid": "4e950cb0-48b0-11f1-bdce-4dd12c9a54a8",
 			"dir": "s"
 		},
 		{
-			"levelIid": "b45b0770-21a0-11f1-92a0-31abc403c47f",
-			"dir": "se"
+			"levelIid": "ad3c4fd0-48b0-11f1-8e42-e56653989791",
+			"dir": "nw"
 		}
 	],
 	"customFields" : {},
 	"layers": [
+		"Sprite_Tiles.png",
 		"IntGrid.png"
 	],
-	"entities": {
-		"Sensor": [
-			{
-				"id": "Sensor",
-				"iid": "33a5ebf0-21a0-11f1-92a0-e50136ed64b3",
-				"layer": "Entities",
-				"x": 80,
-				"y": 120,
-				"width": 8,
-				"height": 8,
-				"color": 15389866,
-				"customFields" : {}
-			}
-		]
-	}
+	"entities" : {}
 }

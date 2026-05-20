@@ -4,6 +4,7 @@
 #include "level_loader.hpp"
 #include "physics.hpp"
 #include "clay.hpp"
+#include "death.hpp"
 #include "player.hpp"
 #include "head.hpp"
 #include "interactables.hpp"
@@ -150,23 +151,23 @@ namespace clayborne {
             switch (tg.tile) {
             case grass_tile: {
                 auto tile{ registry.create() };
-                registry.emplace<position>(tile, level_x + tg.x * 8.0f, level_y + tg.y * 8.0f);
-                registry.emplace<collider>(tile, tg.w * 8.0f, tg.h * 8.0f);
-                registry.emplace<light_blocker>(tile);
+                registry.emplace<struct position>(tile, level_x + tg.x * 8.0f, level_y + tg.y * 8.0f);
+                registry.emplace<struct collider>(tile, tg.w * 8.0f, tg.h * 8.0f);
+                registry.emplace<struct light_blocker>(tile);
                 break;
             }
             case clay_tile: {
                 auto tile{ registry.create() };
-                registry.emplace<position>(tile, level_x + tg.x * 8.0f, level_y + tg.y * 8.0f);
-                registry.emplace<collider>(tile, tg.w * 8.0f, tg.h * 8.0f);
-                registry.emplace<clay>(tile);
-                registry.emplace<light_blocker>(tile);
+                registry.emplace<struct position>(tile, level_x + tg.x * 8.0f, level_y + tg.y * 8.0f);
+                registry.emplace<struct collider>(tile, tg.w * 8.0f, tg.h * 8.0f);
+                registry.emplace<struct clay>(tile);
+                registry.emplace<struct light_blocker>(tile);
                 break;
             }
             case lava_tile: {
                 auto tile{ registry.create() };
-                registry.emplace<position>(tile, level_x + tg.x * 8.0f, level_y + tg.y * 8.0f);
-                registry.emplace<collider>(tile, tg.w * 8.0f, tg.h * 8.0f, [](entt::registry &r, const collider::collision &c) {
+                registry.emplace<struct position>(tile, level_x + tg.x * 8.0f, level_y + tg.y * 8.0f);
+                registry.emplace<struct collider>(tile, tg.w * 8.0f, tg.h * 8.0f, [](entt::registry &r, const collider::collision &c) {
                     auto player{ r.try_get<struct player>(c.other) };
                     if (player) {
                         player->state = player::state::dead;
@@ -178,6 +179,7 @@ namespace clayborne {
                         return;
                     }
                 });
+                registry.emplace<struct death>(tile);
                 break;
             }
             default:
@@ -231,7 +233,7 @@ namespace clayborne {
 
         auto foreground_entity{ registry.create() };
         auto &foreground_sprite_position{
-            registry.emplace<position>(foreground_entity)
+            registry.emplace<struct position>(foreground_entity)
         };
         foreground_sprite_position.x = level_x;
         foreground_sprite_position.y = level_y;
@@ -257,7 +259,7 @@ namespace clayborne {
 
         auto background_entity{ registry.create() };
         auto &background_sprite_position{
-            registry.emplace<position>(background_entity)
+            registry.emplace<struct position>(background_entity)
         };
         background_sprite_position.x = level_x;
         background_sprite_position.y = level_y;

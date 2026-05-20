@@ -91,6 +91,7 @@ else()
         -Woverloaded-virtual
         -Wnon-virtual-dtor
         -Wzero-as-null-pointer-constant
+        -Wno-misleading-indentation
         $<$<CONFIG:Debug>:-O0 -g>
         $<$<CONFIG:Release>:-O3 -DNDEBUG>
     )

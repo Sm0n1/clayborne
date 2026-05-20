@@ -1,3 +1,5 @@
+#include "SDL3/SDL_events.h"
+#include "SDL3/SDL_gamepad.h"
 #include "SDL3/SDL_init.h"
 #include "SDL3_mixer/SDL_mixer.h"
 #include "audio.hpp"
@@ -38,7 +40,40 @@ struct gamestate {
     clayborne::audio_cache sounds{};
 
     clayborne::input::manager inputs;
+
+    SDL_Gamepad *gamepad{ nullptr };
 };
+
+static SDL_Gamepad *find_gamepad() noexcept {
+    int gamepads_len;
+    auto gamepads_ptr{
+        SDL_GetGamepads(&gamepads_len)
+    };
+    
+    if (!gamepads_ptr) {
+        SDL_Log("Could not get list of gamepads: %s", SDL_GetError());
+        return nullptr;
+    }
+
+    for (int i{ 0 }; i < gamepads_len; i += 1) {
+        auto gamepad{
+            SDL_OpenGamepad(gamepads_ptr[i])
+        };
+
+        if (!gamepad) {
+            SDL_Log("Could not load gamepad %d: %s", gamepads_ptr[i], SDL_GetError());
+            continue;
+        }
+
+        SDL_Log("Loaded gamepad %d", gamepads_ptr[i]);
+        SDL_free(gamepads_ptr);
+        return gamepad;
+    }
+
+    SDL_Log("Failed to load any connected gamepad");
+    SDL_free(gamepads_ptr);
+    return nullptr;
+}
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
 try {
@@ -49,7 +84,7 @@ try {
     *appstate = &gs;
 
     // Initialize SDL
-    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD)) {
         SDL_Log("SDL init failed: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
@@ -141,6 +176,9 @@ try {
     // Initialize input manager
     gs.inputs = {};
 
+    // Initialize gamepad if available
+    gs.gamepad = find_gamepad();
+
     return SDL_APP_CONTINUE;
 
 } catch (const std::exception& e) {
@@ -175,12 +213,34 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
         // ------------------------ //
         // Temporary Input Handling //
         // ------------------------ //
-        case SDL_SCANCODE_J: player.jump_just_pressed = true; player.jump_pressed = true; break;
-        case SDL_SCANCODE_K: player.head_just_pressed = true; player.head_pressed = true; break;
-        case SDL_SCANCODE_W: player.up = true; break;
-        case SDL_SCANCODE_A: player.left = true; break;
-        case SDL_SCANCODE_S: player.down = true; break;
-        case SDL_SCANCODE_D: player.right = true; break;
+        case SDL_SCANCODE_J:
+        case SDL_SCANCODE_Z:
+        case SDL_SCANCODE_SPACE:
+            player.jump_just_pressed = true;
+            player.jump_pressed = true;
+            break;
+        case SDL_SCANCODE_K:
+        case SDL_SCANCODE_X:
+        case SDL_SCANCODE_LSHIFT:
+            player.head_just_pressed = true;
+            player.head_pressed = true;
+            break;
+        case SDL_SCANCODE_W:
+        case SDL_SCANCODE_UP:
+            player.up = true;
+            break;
+        case SDL_SCANCODE_A:
+        case SDL_SCANCODE_LEFT:
+            player.left = true;
+            break;
+        case SDL_SCANCODE_S:
+        case SDL_SCANCODE_DOWN:
+            player.down = true;
+            break;
+        case SDL_SCANCODE_D:
+        case SDL_SCANCODE_RIGHT:
+            player.right = true;
+            break;
         // ------------------------ //
         default:
             break;
@@ -191,18 +251,123 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
         // Temporary Input Handling //
         // ------------------------ //
         switch (event->key.scancode) {
-        case SDL_SCANCODE_J: player.jump_pressed = false; break;
-        case SDL_SCANCODE_K: player.head_pressed = false; break; 
-        case SDL_SCANCODE_W: player.up = false; break;
-        case SDL_SCANCODE_A: player.left = false; break;
-        case SDL_SCANCODE_S: player.down = false; break;
-        case SDL_SCANCODE_D: player.right = false; break;
+        case SDL_SCANCODE_J:
+        case SDL_SCANCODE_Z:
+        case SDL_SCANCODE_SPACE:
+            player.jump_pressed = false;
+            break;
+        case SDL_SCANCODE_K:
+        case SDL_SCANCODE_X:
+        case SDL_SCANCODE_LSHIFT:
+            player.head_pressed = false;
+            break; 
+        case SDL_SCANCODE_W:
+        case SDL_SCANCODE_UP:
+            player.up = false;
+            break;
+        case SDL_SCANCODE_A:
+        case SDL_SCANCODE_LEFT:
+            player.left = false;
+            break;
+        case SDL_SCANCODE_S:
+        case SDL_SCANCODE_DOWN:
+            player.down = false;
+            break;
+        case SDL_SCANCODE_D:
+        case SDL_SCANCODE_RIGHT:
+            player.right = false;
+            break;
         default: break;
         }
         break;
         // ------------------------ //
-    // case SDL_EVENT_GAMEPAD_ADDED:
-    // case SDL_EVENT_GAMEPAD_REMOVED:
+    case SDL_EVENT_GAMEPAD_ADDED: {
+        const auto gamepad{
+            SDL_OpenGamepad(event->gdevice.which)
+        };
+        if (gamepad) {
+            SDL_Log("Loaded gamepad %d", event->gdevice.which);
+            SDL_CloseGamepad(gs.gamepad);
+            gs.gamepad = gamepad;
+        }
+        else {
+            SDL_Log("Could not load gamepad %d: %s", event->gdevice.which, SDL_GetError());
+        }
+        break;
+    }
+    case SDL_EVENT_GAMEPAD_REMOVED:
+        if (event->gdevice.which == SDL_GetGamepadID(gs.gamepad)) {
+            SDL_Log("Unloaded gamepad %d", SDL_GetGamepadID(gs.gamepad));
+            SDL_CloseGamepad(gs.gamepad);
+            gs.gamepad = find_gamepad();
+        }
+        break;
+    // ------------------------ //
+    // Temporary Input Handling //
+    // ------------------------ //
+    case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+        switch (event->gbutton.button) {
+        case SDL_GAMEPAD_BUTTON_LABEL_A:
+        case SDL_GAMEPAD_BUTTON_LABEL_Y:
+            player.jump_just_pressed = true;
+            player.jump_pressed = true;
+            break;
+        case SDL_GAMEPAD_BUTTON_LABEL_B:
+        case SDL_GAMEPAD_BUTTON_LABEL_X:
+            player.head_just_pressed = true;
+            player.head_pressed = true;
+            break;
+        case SDL_GAMEPAD_BUTTON_DPAD_UP:
+            player.up = true;
+            break;
+        case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
+            player.left = true;
+            break;
+        case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
+            player.down = true;
+            break;
+        case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:
+            player.right = true;
+            break;
+        }
+        break;
+    case SDL_EVENT_GAMEPAD_BUTTON_UP:
+        switch (event->gbutton.button) {
+        case SDL_GAMEPAD_BUTTON_LABEL_A:
+        case SDL_GAMEPAD_BUTTON_LABEL_Y:
+            player.jump_pressed = false;
+            break;
+        case SDL_GAMEPAD_BUTTON_LABEL_B:
+        case SDL_GAMEPAD_BUTTON_LABEL_X:
+            player.head_pressed = false;
+            break;
+        case SDL_GAMEPAD_BUTTON_DPAD_UP:
+            player.up = false;
+            break;
+        case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
+            player.left = false;
+            break;
+        case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
+            player.down = false;
+            break;
+        case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:
+            player.right = false;
+            break;
+        }
+        break;
+    case SDL_EVENT_GAMEPAD_AXIS_MOTION: {
+        constexpr Sint16 dead_zone{ 8000 };
+        if (event->gaxis.axis == SDL_GAMEPAD_AXIS_LEFTX) {
+            player.left = event->gaxis.value < -dead_zone;
+            player.right = event->gaxis.value > dead_zone;
+        }
+        else if (event->gaxis.axis == SDL_GAMEPAD_AXIS_LEFTY) {
+            player.up = event->gaxis.value < -dead_zone;
+            player.down = event->gaxis.value > dead_zone;
+        }
+        break;
+    }
+    // ------------------------ //
     default:
         // gs.inputs.process_event(*event);
         break;
@@ -253,6 +418,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 void SDL_AppQuit(void *appstate, SDL_AppResult result) {
     auto &gs{ *static_cast<gamestate*>(appstate) };
 
+    SDL_CloseGamepad(gs.gamepad);
     SDL_DestroyTexture(gs.vignette);
     SDL_DestroyTexture(gs.canvas);
     SDL_DestroyRenderer(gs.renderer);

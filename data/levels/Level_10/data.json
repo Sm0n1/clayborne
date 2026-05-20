@@ -1,32 +1,101 @@
 {
 	"identifier": "Level_10",
-	"uniqueIdentifer": "6dccb490-21a0-11f1-92a0-c9e38e4de1f1",
-	"x": -960,
-	"y": -184,
+	"uniqueIdentifer": "2297f400-21a0-11f1-92a0-711a5d02a899",
+	"x": 320,
+	"y": -736,
 	"width": 320,
 	"height": 184,
 	"bgColor": "#696A79",
 	"neighbourLevels": [
 		{
-			"levelIid": "9ae2fe70-21a0-11f1-9904-f585badd8ac6",
+			"levelIid": "811dca40-21a0-11f1-92a0-85951d21af9b",
 			"dir": "s"
 		},
 		{
-			"levelIid": "7facfc30-21a0-11f1-92a0-27a8165637c0",
+			"levelIid": "ce4c1970-21a0-11f1-92a0-51d598a20f4c",
+			"dir": "n"
+		},
+		{
+			"levelIid": "6a83e6a0-21a0-11f1-92a0-d3709a0a168b",
+			"dir": "ne"
+		},
+		{
+			"levelIid": "c02103e0-21a0-11f1-92a0-1d8a8069dbc9",
 			"dir": "e"
 		},
 		{
-			"levelIid": "aff93c50-21a0-11f1-92a0-07e6fb9ff776",
+			"levelIid": "737223c0-48b0-11f1-b4eb-2bb2daf85259",
 			"dir": "se"
 		},
 		{
-			"levelIid": "c3c158f0-21a0-11f1-92a0-a30b1ccfced9",
-			"dir": "ne"
+			"levelIid": "d7815890-48b0-11f1-8e42-6d8872a16f7e",
+			"dir": "sw"
 		}
 	],
 	"customFields" : {},
 	"layers": [
+		"Sprite_Tiles.png",
 		"IntGrid.png"
 	],
-	"entities" : {}
+	"entities": {
+		"Door": [
+			{
+				"id": "Door",
+				"iid": "8701fa30-21a0-11f1-92a0-b932268b1a0c",
+				"layer": "Entities",
+				"x": 112,
+				"y": 128,
+				"width": 8,
+				"height": 8,
+				"color": 14120515,
+				"customFields" : {}
+			},
+			{
+				"id": "Door",
+				"iid": "87523d10-21a0-11f1-92a0-f55b6006bf77",
+				"layer": "Entities",
+				"x": 112,
+				"y": 120,
+				"width": 8,
+				"height": 8,
+				"color": 14120515,
+				"customFields" : {}
+			},
+			{
+				"id": "Door",
+				"iid": "87951270-21a0-11f1-92a0-6d5b2d9bf697",
+				"layer": "Entities",
+				"x": 112,
+				"y": 112,
+				"width": 8,
+				"height": 8,
+				"color": 14120515,
+				"customFields" : {}
+			}
+		],
+		"Sensor": [
+			{
+				"id": "Sensor",
+				"iid": "89008950-21a0-11f1-92a0-49902fb0978d",
+				"layer": "Entities",
+				"x": 80,
+				"y": 128,
+				"width": 8,
+				"height": 8,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Sensor",
+				"iid": "8aef39f0-21a0-11f1-92a0-bb159f5ed08d",
+				"layer": "Entities",
+				"x": 144,
+				"y": 128,
+				"width": 8,
+				"height": 8,
+				"color": 15389866,
+				"customFields" : {}
+			}
+		]
+	}
 }

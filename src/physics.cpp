@@ -61,7 +61,8 @@ namespace clayborne {
 
                 if (is_collision) {
                     break;
-                } else {
+                }
+                else {
                     self_position = self_new_position;
                 }
             }
@@ -96,7 +97,8 @@ namespace clayborne {
 
                 if (is_collision) {
                     break;
-                } else {
+                }
+                else {
                     self_position = self_new_position;
                 }
             }
