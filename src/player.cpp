@@ -11,6 +11,7 @@
 #include "SDL3/SDL_surface.h"
 #include "physics.hpp"
 #include "clay.hpp"
+#include "death.hpp"
 #include "sprite.hpp"
 #include "utils.hpp"
 #include "interactables.hpp"
@@ -270,28 +271,28 @@ namespace clayborne {
         const struct player &player_player,
         const struct position &player_position
     ) noexcept {
-        auto dust_entity{ registry.create() };
+        auto entity{ registry.create() };
 
-        auto& respawn_vfx{ registry.emplace<struct vfx>(dust_entity) };
-        respawn_vfx.age = 0;
-        respawn_vfx.lifespan = 30; //TODO lookup the correct number of frames
+        auto& vfx{ registry.emplace<struct vfx>(entity) };
+        vfx.age = 0;
+        vfx.lifespan = 30; //TODO lookup the correct number of frames
 
-        auto& sprite_renderer{ registry.emplace<struct sprite_renderer>(dust_entity) };
+        auto& sprite_renderer{ registry.emplace<struct sprite_renderer>(entity) };
         sprite_renderer.texture = "dust"_hs;
         sprite_renderer.z = 2;
 
-        auto& sprite_animator{ registry.emplace<struct sprite_animator>(dust_entity) };
+        auto& sprite_animator{ registry.emplace<struct sprite_animator>(entity) };
         sprite_animator.animation = "dust"_hs;
         sprite_animator.current_frame = 0;
         sprite_animator.is_looping = false;
 
-        auto& respawn_pos{ registry.emplace<struct position>(dust_entity) };
-        respawn_pos.x = player_position.x - 8.0f;
+        auto& position{ registry.emplace<struct position>(entity) };
+        position.x = player_position.x - 8.0f;
         if (player_player.is_head_attached) {
-            respawn_pos.y = player_position.y + 3.0f;
+            position.y = player_position.y + 3.0f;
         }
         else {
-            respawn_pos.y = player_position.y;
+            position.y = player_position.y;
         }
     }
 
@@ -299,24 +300,24 @@ namespace clayborne {
         entt::registry &registry,
         const struct position &player_position
     ) {
-        auto respawn_entity{ registry.create() };
+        auto entity{ registry.create() };
 
-        auto &respawn_vfx{ registry.emplace<struct vfx>(respawn_entity) };
-        respawn_vfx.age = 0;
-        respawn_vfx.lifespan = 30; //TODO lookup the correct number of frames
+        auto &vfx{ registry.emplace<struct vfx>(entity) };
+        vfx.age = 0;
+        vfx.lifespan = 30; //TODO lookup the correct number of frames
 
-        auto &sprite_renderer { registry.emplace<struct sprite_renderer>(respawn_entity) };
+        auto &sprite_renderer { registry.emplace<struct sprite_renderer>(entity) };
         sprite_renderer.texture = "resurrect"_hs;
         sprite_renderer.z = 2;
 
-        auto &sprite_animator { registry.emplace<struct sprite_animator>(respawn_entity) };
+        auto &sprite_animator { registry.emplace<struct sprite_animator>(entity) };
         sprite_animator.animation = "resurrect"_hs;
         sprite_animator.current_frame = 0;
         sprite_animator.is_looping = false;
 
-        auto& respawn_pos{ registry.emplace<struct position>(respawn_entity) };
-        respawn_pos.x = player_position.x - 8.0f;
-        respawn_pos.y = player_position.y - 12.0f;
+        auto& position{ registry.emplace<struct position>(entity) };
+        position.x = player_position.x - 8.0f;
+        position.y = player_position.y - 12.0f;
     }
 
     static void respawn_player(
@@ -347,9 +348,20 @@ namespace clayborne {
                 return;
             }
         }
-        
-        position.x = player.respawn_x;
-        position.y = player.respawn_y;
+
+        // The respawn point needs to be adjusted to not make the player get stuck
+        if (player.is_head_attached == player.is_respawn_tall) {
+            position.x = player.respawn_x;
+            position.y = player.respawn_y;
+        }
+        else if (player.is_head_attached) {
+            position.x = player.respawn_x;
+            position.y = player.respawn_y - 3.0f;
+        }
+        else {
+            position.x = player.respawn_x;
+            position.y = player.respawn_y + 3.0f;
+        }
 
         // We handle head regrowth here as well just to avoid overlapping audio
         if (!player.is_head_attached && player.is_head_detonated && player.respawn_clay) {
@@ -431,7 +443,13 @@ namespace clayborne {
         if (velocity.y >= 0.0f) {
             auto below{ position };
             below.y += 1.0f;
-            if (overlap_any(registry, player_entity, below, collider)) {
+            if (overlap_any(
+                registry,
+                player_entity,
+                below,
+                collider,
+                entt::exclude<struct death>
+            )) {
                 player.is_grounded = true;
             }
         }
@@ -446,6 +464,7 @@ namespace clayborne {
                 player.is_on_clay = true;
                 player.respawn_x = position.x;
                 player.respawn_y = position.y;
+                player.is_respawn_tall = player.is_head_attached;
                 player.respawn_clay = true;
             }
         }
@@ -716,8 +735,8 @@ namespace clayborne {
                         head_renderer.flip = player.facing == player::facing::left ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
                         head_renderer.z = 1;
                     }
-                    // Throw failed
-                    // We still enter the throw state, but the player keeps their head and aren't moved
+                    // Throw failed.
+                    // We still enter the throw state, but the player keeps their head and aren't moved.
                     else {
                         player.is_head_attached = true;
                         player.is_head_detonated = true;
@@ -800,29 +819,49 @@ namespace clayborne {
                         sprite_animator.current_frame < animations[sprite_animator.animation]->frames.size()
                     )
                 ) {
-                    if (player.is_head_attached) play("land"_hs);
-                    else                         play("land_headless"_hs);
+                    if (player.is_head_attached) {
+                        play("land"_hs);
+                    }
+                    else {
+                        play("land_headless"_hs);
+                    }
                     sprite_animator.is_looping = false;
                 }
                 else if (player.left == player.right) {
-                    if (player.is_head_attached) play("idle"_hs);
-                    else                         play("idle_headless"_hs);
+                    if (player.is_head_attached) {
+                        play("idle"_hs);
+                    }
+                    else {
+                        play("idle_headless"_hs);
+                    }
                     sprite_animator.is_looping = true;
                 }
                 else {
-                    if (player.is_head_attached) play("run"_hs);
-                    else                         play("run_headless"_hs);
+                    if (player.is_head_attached) {
+                        play("run"_hs);
+                    }
+                    else {
+                        play("run_headless"_hs);
+                    }
                     sprite_animator.is_looping = true;
                 }
             }
             else if (velocity.y < 0.0f) {
-                if (player.is_head_attached) play("jump"_hs);
-                else                         play("jump_headless"_hs);
+                if (player.is_head_attached) {
+                    play("jump"_hs);
+                }
+                else {
+                    play("jump_headless"_hs);
+                }
                 sprite_animator.is_looping = false;
             }
             else {
-                if (player.is_head_attached) play("fall"_hs);
-                else                         play("fall_headless"_hs);
+                if (player.is_head_attached) {
+                    play("fall"_hs);
+                }
+                else {
+                    play("fall_headless"_hs);
+                }
                 sprite_animator.is_looping = true;
             }
             break;

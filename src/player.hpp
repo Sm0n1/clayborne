@@ -126,6 +126,7 @@ namespace clayborne {
 
         float respawn_x{ 0.0f };
         float respawn_y{ 0.0f };
+        bool is_respawn_tall{ false }; // true if the respawn point was set with the player head attached
         bool respawn_clay{ false };
     };
 
