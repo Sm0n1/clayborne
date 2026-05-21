@@ -54,7 +54,7 @@ namespace clayborne {
             return false;
         }
 
-        if (!sounds.load("music"_hs, "data/clayborne.wav", mixer).first->second) {
+        if (!sounds.load("music"_hs, "data/clayborne-extended.mp3", mixer).first->second) {
             return false;
         }
 
