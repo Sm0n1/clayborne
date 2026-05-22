@@ -573,6 +573,11 @@ namespace clayborne {
         // Jump Mechanics //
         // -------------- //
 
+        if (player.is_landing) {
+            // TODO: Replace with audio event sink
+            (void)play_sound(registry, sounds, mixer, "land"_hs, 1.3f, false);
+        }
+
         if (player.state == player::state::start) {
             // The apex of the jump has lower gravity if holding the jump button
             if (!player.is_grounded) {
@@ -606,7 +611,7 @@ namespace clayborne {
                 player.jump_boost_speed = velocity.y;
 
                 // TODO: Replace with audio event sink
-                (void)play_sound(registry, sounds, mixer, "jump"_hs, 0.2f, false);
+                (void)play_sound(registry, sounds, mixer, "jump"_hs, 1.0f, false);
 
                 spawn_jump_cloud_vfx(registry, player, position);
             }

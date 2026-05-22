@@ -34,6 +34,10 @@ namespace clayborne {
             return false;
         }
 
+        if (!sounds.load("land"_hs, "data/land.wav", mixer).first->second) {
+            return false;
+        }
+
         if (!sounds.load("head_explosion"_hs, "data/explosion.wav", mixer).first->second) {
             return false;
         }
