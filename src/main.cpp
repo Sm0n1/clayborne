@@ -396,6 +396,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
             player.head_just_pressed = false;
             auto track{ gs.registry.get<clayborne::sound>(gs.start_music).track };
             MIX_StopTrack(track, MIX_TrackMSToFrames(track, 1000));
+            clayborne::play_sound(gs.registry, gs.sounds, gs.mixer, entt::hashed_string{ "menu_start" }, 0.3f, false);
         }
         gs.is_started = true;
         break;

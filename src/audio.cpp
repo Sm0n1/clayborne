@@ -66,7 +66,7 @@ namespace clayborne {
             return false;
         }
 
-        if (!sounds.load("menu_start"_hs, "data/jump.wav", mixer).first->second) {
+        if (!sounds.load("menu_start"_hs, "data/start.wav", mixer).first->second) {
             return false;
         }
 
