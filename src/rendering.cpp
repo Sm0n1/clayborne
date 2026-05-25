@@ -147,13 +147,56 @@ namespace clayborne {
         return texture;
     }
 
+    // This function takes a texture, and draws it in the same rectangle as the scaled canvas texture.
+    // The position parameters are in the unscaled canvas coordinate space.
+    // Note, this may render outside the scaled canvas rectangle.
+    static void render_texture(
+        SDL_Renderer *renderer,
+        const struct position &position,
+        const struct sprite_renderer &sprite_renderer,
+        texture_cache &textures
+    ) {
+        auto texture{
+            textures[sprite_renderer.texture]
+        };
+
+        if (!texture) {
+            return;
+        }
+
+        SDL_FRect rect;
+
+        SDL_GetRenderLogicalPresentationRect(renderer, &rect);
+        SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED);
+
+        const float canvas_w_scale{ rect.w / static_cast<float>(canvas_width) };
+        const float canvas_h_scale{ rect.h / static_cast<float>(canvas_height) };
+
+        float w;
+        float h;
+
+        SDL_GetTextureSize(texture.handle().get(), &w, &h);
+
+        SDL_FRect dstrect{
+            .x = rect.x + position.x * canvas_w_scale + sprite_renderer.x_offset * canvas_w_scale / 8.0f,
+            .y = rect.y + position.y * canvas_h_scale + sprite_renderer.y_offset * canvas_w_scale / 8.0f,
+            .w = w * canvas_w_scale / 8.0f,
+            .h = h * canvas_h_scale / 8.0f,
+        };
+
+        SDL_RenderTexture(renderer, texture.handle().get(), nullptr, &dstrect);
+        SDL_SetRenderLogicalPresentation(renderer, canvas_width, canvas_height, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
+    }
+
     void render(
         const entt::entity camera,
         const entt::registry &registry,
         texture_cache &textures,
         SDL_Renderer *renderer,
         SDL_Texture *canvas,
-        SDL_Texture *vignette
+        SDL_Texture *vignette,
+        bool is_started,
+        Uint64 start_timer
     ) {
         // Clear last frame
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -163,8 +206,9 @@ namespace clayborne {
 
         // Draw camera view
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        auto &camera_position{ registry.get<const struct position>(camera) };
-        auto view{ registry.view<const struct position, const struct sprite_renderer>() };
+        auto &camera_position{ registry.get<struct position>(camera) };
+        auto view{ registry.view<struct position, struct sprite_renderer>(entt::exclude<struct menu>) };
+        view.use<struct sprite_renderer>();
         for (auto entity : view) {
             const auto &sprite_renderer{
                 view.get<const struct sprite_renderer>(entity)
@@ -221,6 +265,39 @@ namespace clayborne {
         SDL_SetRenderTarget(renderer, nullptr);
         SDL_RenderTexture(renderer, canvas, nullptr, nullptr);
         SDL_RenderTexture(renderer, vignette, nullptr, nullptr);
+
+        // Render menu items
+        auto menu_items{ registry.view<struct menu, struct position, struct sprite_renderer>() };
+        menu_items.use<struct sprite_renderer>();
+        for (auto entity : menu_items) {
+            const auto &sprite_renderer{
+                menu_items.get<struct sprite_renderer>(entity)
+            };
+
+            const auto &position{
+                view.get<const struct position>(entity)
+            };
+
+            render_texture(renderer, position, sprite_renderer, textures);
+        }
+
+        // Render transition
+        if (is_started && start_timer < 2 * SDL_NS_PER_SECOND) {
+            const float t{
+                static_cast<float>(start_timer * SDL_PI_F / (2 * SDL_NS_PER_SECOND))
+            };
+
+            const Uint8 alpha{
+                static_cast<Uint8>(SDL_fabsf(SDL_sinf(t)) * 255.0f)
+            };
+            
+            SDL_Log("t = %f, alpha = %d", t, alpha);
+
+            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, alpha);
+            SDL_RenderFillRect(renderer, nullptr);
+        }
+
         SDL_RenderPresent(renderer);
     }
 }

@@ -280,6 +280,7 @@ namespace clayborne {
         auto& sprite_renderer{ registry.emplace<struct sprite_renderer>(entity) };
         sprite_renderer.texture = "dust"_hs;
         sprite_renderer.z = 2;
+        sprite_renderer.alpha = 200;
 
         auto& sprite_animator{ registry.emplace<struct sprite_animator>(entity) };
         sprite_animator.animation = "dust"_hs;
@@ -413,8 +414,14 @@ namespace clayborne {
         // TODO: Replace with events
         audio_cache &sounds,
         // TODO: Replace with events
-        MIX_Mixer *mixer
+        MIX_Mixer *mixer,
+        bool is_started,
+        Uint64 start_timer
     ) noexcept {
+        if (!is_started || start_timer < 2 * SDL_NS_PER_SECOND) {
+            return;
+        }
+
         const float delta_time{ static_cast<float>(static_cast<double>(dt_ns) / SDL_NS_PER_SECOND) };
 
         for (auto event : inputs.get_events()) {

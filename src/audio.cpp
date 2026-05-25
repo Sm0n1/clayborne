@@ -62,6 +62,14 @@ namespace clayborne {
             return false;
         }
 
+        if (!sounds.load("menu_music"_hs, "data/menu.wav", mixer).first->second) {
+            return false;
+        }
+
+        if (!sounds.load("menu_start"_hs, "data/jump.wav", mixer).first->second) {
+            return false;
+        }
+
         return true;
     }
 

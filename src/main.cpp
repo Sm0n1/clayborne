@@ -21,6 +21,7 @@
 #include "rendering.hpp"
 #include "sdl.hpp"
 #include "vfx.hpp"
+#include "menu.hpp"
 
 struct gamestate {
     SDL_Window *window{ nullptr };
@@ -42,6 +43,10 @@ struct gamestate {
     clayborne::input::manager inputs;
 
     SDL_Gamepad *gamepad{ nullptr };
+
+    bool is_started{ false };
+    Uint64 start_timer{ 0 };
+    entt::entity start_music{ entt::null };
 };
 
 static SDL_Gamepad *find_gamepad() noexcept {
@@ -139,8 +144,8 @@ try {
     if (!clayborne::load_debug_sounds(gs.sounds, gs.mixer)) {
         return SDL_APP_FAILURE;
     }
-    clayborne::play_sound(gs.registry, gs.sounds, gs.mixer, entt::hashed_string{ "ambiance" }, 1.5f, true);
-    clayborne::play_sound(gs.registry, gs.sounds, gs.mixer, entt::hashed_string{ "music" }, 0.7f, true);
+
+    gs.start_music = clayborne::play_sound(gs.registry, gs.sounds, gs.mixer, entt::hashed_string{ "menu_music" }, 0.7f, true);
 
     if (!clayborne::load_player_data(gs.textures, gs.renderer, gs.animations)) {
         return SDL_APP_FAILURE;
@@ -178,6 +183,10 @@ try {
 
     // Initialize gamepad if available
     gs.gamepad = find_gamepad();
+
+    if (!clayborne::init_menu(gs.registry, gs.textures, gs.renderer)) {
+        return SDL_APP_FAILURE;
+    }
 
     return SDL_APP_CONTINUE;
 
@@ -373,6 +382,27 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
         break;
     }
 
+    switch (event->type) {
+    case SDL_EVENT_KEY_DOWN:
+    case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+        if (!gs.is_started) {
+            player.up = false;
+            player.down = false;
+            player.left = false;
+            player.right = false;
+            player.jump_pressed = false;
+            player.jump_just_pressed = false;
+            player.head_pressed = false;
+            player.head_just_pressed = false;
+            auto track{ gs.registry.get<clayborne::sound>(gs.start_music).track };
+            MIX_StopTrack(track, MIX_TrackMSToFrames(track, 1000));
+        }
+        gs.is_started = true;
+        break;
+    default:
+        break;
+    }
+
     return SDL_APP_CONTINUE;
 }
 
@@ -386,7 +416,19 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     constexpr auto dt_ns{ SDL_NS_PER_SECOND / 60 };
 
     while (gs.accumulated_time >= dt_ns) {
-        clayborne::update_player(gs.player, gs.registry, gs.inputs, dt_ns, gs.sounds, gs.mixer);
+        if (gs.is_started && gs.start_timer < 2 * SDL_NS_PER_SECOND) {
+            gs.start_timer += dt_ns;
+        }
+
+        static bool is_start_handled{ false };
+        if (!is_start_handled && gs.is_started && gs.start_timer >= SDL_NS_PER_SECOND) {
+            is_start_handled = true;
+            clayborne::play_sound(gs.registry, gs.sounds, gs.mixer, entt::hashed_string{ "ambiance" }, 1.5f, true);
+            clayborne::play_sound(gs.registry, gs.sounds, gs.mixer, entt::hashed_string{ "music" }, 0.7f, true);
+        }
+
+        clayborne::update_menu(gs.registry, dt_ns, gs.is_started, gs.start_timer);
+        clayborne::update_player(gs.player, gs.registry, gs.inputs, dt_ns, gs.sounds, gs.mixer, gs.is_started, gs.start_timer);
         clayborne::update_heads(gs.registry, dt_ns, gs.animations, gs.sounds, gs.mixer);
         clayborne::update_physics(gs.registry, dt_ns);
         clayborne::sense(gs.registry);
@@ -410,7 +452,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
         }
     );
 
-    clayborne::render(gs.camera, gs.registry, gs.textures, gs.renderer, gs.canvas, gs.vignette);
+    clayborne::render(gs.camera, gs.registry, gs.textures, gs.renderer, gs.canvas, gs.vignette, gs.is_started, gs.start_timer);
 
     return SDL_APP_CONTINUE;
 }

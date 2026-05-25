@@ -4,6 +4,7 @@
 #include <entt/entt.hpp>
 #include <SDL3/SDL.h>
 #include "sprite.hpp"
+#include "menu.hpp"
 
 namespace clayborne {
     constexpr int canvas_width{ 320 };
@@ -40,7 +41,9 @@ namespace clayborne {
         texture_cache &textures,
         SDL_Renderer *renderer,
         SDL_Texture *canvas,
-        SDL_Texture *vignette
+        SDL_Texture *vignette,
+        bool is_started,
+        Uint64 start_timer
     );
 }
 

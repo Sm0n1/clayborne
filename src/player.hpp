@@ -91,7 +91,7 @@ namespace clayborne {
         // States & Flags //
         // -------------- //
 
-        bool is_grounded{ false }; //
+        bool is_grounded{ true }; //
         bool is_landing{ false };
         bool is_on_clay{ false }; // False if not grounded
         bool is_head_attached{ false }; //
@@ -150,7 +150,9 @@ namespace clayborne {
         // TODO: Replace with events
         audio_cache &sounds,
         // TODO: Replace with events
-        MIX_Mixer *mixer
+        MIX_Mixer *mixer,
+        bool is_started,
+        Uint64 start_timer
     ) noexcept;
 
     void player_head_catch_sfx(
