@@ -284,14 +284,14 @@ namespace clayborne {
         // Render transition
         if (is_started && start_timer < 2 * SDL_NS_PER_SECOND) {
             const float t{
-                static_cast<float>(start_timer * SDL_PI_F / (2 * SDL_NS_PER_SECOND))
+                (static_cast<float>(start_timer) * SDL_PI_F / (2 * SDL_NS_PER_SECOND))
             };
 
             const Uint8 alpha{
                 static_cast<Uint8>(SDL_fabsf(SDL_sinf(t)) * 255.0f)
             };
             
-            SDL_Log("t = %f, alpha = %d", t, alpha);
+            SDL_Log("t = %f, alpha = %d", static_cast<double>(t), alpha);
 
             SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, alpha);
