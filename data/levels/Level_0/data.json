@@ -38,7 +38,6 @@
 	],
 	"customFields" : {},
 	"layers": [
-		"Sprite_Tiles.png",
 		"IntGrid.png"
 	],
 	"entities": {
