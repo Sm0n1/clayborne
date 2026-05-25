@@ -384,6 +384,9 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
 
     switch (event->type) {
     case SDL_EVENT_KEY_DOWN:
+        if (event->key.scancode == SDL_SCANCODE_F11) {
+            break;
+        }
     case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
         if (!gs.is_started) {
             player.up = false;
