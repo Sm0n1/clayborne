@@ -7,6 +7,7 @@ import ImageRotation from "./ImageRotation.jsx";
 import screenshot1 from "../trailer images/screenshot1.png";
 import screenshot2 from "../trailer images/screenshot2.png";
 import screenshot3 from "../trailer images/screenshot3.png";
+import screenshot4 from "../trailer images/screenshot4.png";
 import sparkles from "../images/sparkles.png";
 import eyeClosed from "../images/eye-closed.png";
 import mapPlus from "../images/map-plus.png";
@@ -14,13 +15,14 @@ import astroid from "../images/astroid.png";
 
 
 
+
 function About() {
 
    const team = [
 { name: "Pontus Andersson", role: "Programmer, Storyteller", img: "image" },
-{ name: "Arindam Kishore Dutta", role: "Animator, Designer, Storyteller", img: "image" },
+{ name: "Arindam Kishore Dutta", role: "Lead Artist, Animator, Storyteller", img: "image" },
 { name: "Elin Eriksson", role: "Tileset Artist, Storyteller, Web Developer", img: "image" },
-{ name: "Simon Jutvreten", role: "Lead Programmer, Game Designer, Sound Designer, Music Composer", img: "image" },
+{ name: "Simon Jutvreten", role: "Lead Programmer, Sound Designer, Music Composer", img: "image" },
 { name: "Erik Olsson", role: "Programmer, Level Designer", img: "image" },
 ];
 
@@ -51,13 +53,29 @@ function handleGDDC() {
   return (
     <div>
       <div className = "pageTitle">
-         <p>
-        Clayborne is a 2D puzzle-platformer set in the forgotten world of Kemerheim.
-      </p>
-      <p>
-        Explore ancient ruins, solve environmental puzzles,
-        and uncover the truth behind a lost civilization of clay and crystal.
-      </p>
+<h2 className="pageTitle">About Clayborne</h2>
+
+<p>
+  Clayborne is a 2D puzzle-platformer set in the forgotten world of Kemerheim, 
+  a ruined civilization built from clay and crystal.
+</p>
+
+<p>
+  Players explore ancient ruins, solve environmental puzzles, and uncover hidden 
+  mechanics through experimentation rather than traditional ability upgrades.
+</p>
+
+<p>
+  Using the protagonist’s detachable head, players can interact with the world 
+  in creative ways to traverse dangerous environments and discover the truth 
+  behind Kemerheim’s disappearance.
+</p>
+
+<p>
+  Clayborne was developed as a student project for the course DH2650 
+  (Computer Game Design) at KTH in 2026. The current version is a playable prototype created for the course project 
+  and does not represent a finished commercial game.
+</p>
         
         </div>
             <div className="play-badges">
@@ -74,7 +92,7 @@ function handleGDDC() {
           <p className="badge-desc">Hand-crafted style</p>
         </div>
       </div>
-      <ImageRotation images={[screenshot1, screenshot2, screenshot3]} />
+      <ImageRotation images={[screenshot1, screenshot2, screenshot3, screenshot4]} />
 
       <div className="mechanics-section">
         <h2 className="pageTitel">Game Mechanics</h2>
@@ -100,7 +118,7 @@ function handleGDDC() {
 
           <div className="info-card" onClick={handleGDDC}>
             <h2 className="pageTitel">Documentation</h2>
-            <p>Read the detailed Game Development Document here</p>
+            <p>Explore the Game Design Document and learn more about the vision behind Clayborne.</p>
              <img style={{ display: "block", margin: "0 auto" }} src={docsImg} alt="Documentation" />
           </div>
 
