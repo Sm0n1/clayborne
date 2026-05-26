@@ -1,0 +1,137 @@
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+name: Deploy React Site
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["main"]
+
+  # Allows us to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # -------- #
+  # Building #
+  # -------- #
+  
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # -------- #
+      # Checkout #
+      # -------- #
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ---------------- #
+      # Emscripten Setup #
+      # ---------------- #
+
+      # Cache Emscripten
+      - name: Cache Emscripten SDK
+        uses: actions/cache@v4
+        with:
+          path: emsdk
+          key: emsdk-${{ runner.os }}-latest
+      
+      # Setup Emscripten
+      - name: Setup Emscripten
+        run: |
+          if [ ! -d "emsdk" ]; then
+            git clone https://github.com/emscripten-core/emsdk.git
+          fi
+
+          cd emsdk
+
+          ./emsdk install latest
+          ./emsdk activate latest
+      
+      # Add Emscripten to PATH
+      - name: Activate Emscripten
+        run: echo "$PWD/emsdk/upstream/emscripten" >> $GITHUB_PATH
+      
+      # ---------- #
+      # Game Setup #
+      # ---------- #
+      
+      # Cache Build Dependencies
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: deps-${{ runner.os }}-${{ hashFiles('CMakeLists.txt', 'vendored/**') }}
+
+      # Build Game
+      - name: Build Game
+        run: |
+          source emsdk/emsdk_env.sh
+
+          mkdir -p build
+          emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release -DCLAYBORNE_VENDORED=ON
+          cmake --build build --target clayborne -j$(nproc)
+
+      # ------------- #
+      # Website Setup #
+      # ------------- #
+    
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build React App
+        working-directory: website
+        run: npm run build
+
+      - name: Merge Game
+        run: |
+          mkdir -p website/build/game
+
+          cp -v build/clayborne.js   website/build/game/
+          cp -v build/clayborne.wasm website/build/game/
+          cp -v build/clayborne.data website/build/game/
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./website/build
+  
+  # ------------------ #
+  # Website Deployment #
+  # ------------------ #
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+      
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
