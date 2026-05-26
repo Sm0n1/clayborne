@@ -68,11 +68,6 @@ const canvasRef = useRef(null);
                 id="canvas"
                 className="game-canvas"
                 style={{
-                    position: started ? 'static' : 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
                     opacity: started ? 1 : 0,
                     pointerEvents: started ? 'auto' : 'none',
                 }}

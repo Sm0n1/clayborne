@@ -32,7 +32,7 @@ font-family: "Metamorphous", serif;
 }
 
 .play-page {
-  max-width: 700px;
+  max-width: 704px;
   margin: 0 auto;
   padding: 2rem 1rem;
 }
@@ -229,7 +229,7 @@ kbd {
  
   .controls-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 12px;
   }
  
@@ -330,3 +330,13 @@ kbd {
   bottom: 20%;
 }
  
+.game-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background: #000;
+  image-rendering: pixelated;
+  object-fit: fill;
+}
