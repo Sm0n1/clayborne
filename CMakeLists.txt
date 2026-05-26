@@ -99,7 +99,7 @@ endif()
 
 if(EMSCRIPTEN)
     set_target_properties(clayborne PROPERTIES
-        SUFFIX ""
+        SUFFIX ".js"
     )
 
     target_compile_options(clayborne PUBLIC
