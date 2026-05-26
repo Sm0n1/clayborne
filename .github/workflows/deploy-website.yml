@@ -74,7 +74,9 @@ jobs:
       - name: Cache Dependencies
         uses: actions/cache@v4
         with:
-          path: build
+          path: |
+            build/CMakeFiles
+            build/vendored
           key: deps-${{ runner.os }}-${{ hashFiles('CMakeLists.txt', 'vendored/**') }}
 
       # Build Game
@@ -97,6 +99,7 @@ jobs:
           cache: npm
 
       - name: Install Dependencies
+        working-directory: website
         run: npm ci
 
       - name: Build React App
@@ -105,8 +108,14 @@ jobs:
 
       - name: Merge Game
         run: |
+          test -f website/build
+
           mkdir -p website/build/game
 
+          test -f build/clayborne.js
+          test -f build/clayborne.wasm
+          test -f build/clayborne.data
+          
           cp -v build/clayborne.js   website/build/game/
           cp -v build/clayborne.wasm website/build/game/
           cp -v build/clayborne.data website/build/game/
