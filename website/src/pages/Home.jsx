@@ -12,16 +12,15 @@ import fallBodySprite from "../images//fall_body.png"
 
 
 function Home() {
-
   const [activeTab, setActiveTab] = useState(0);
 
-     const team = [
-{ name: "Pontus Andersson", role: "Programmer, Storyteller", img: "image" },
-{ name: "Arindam Kishore Dutta", role: "Animator, Designer, Storyteller", img: "image" },
-{ name: "Elin Eriksson", role: "Tileset Artist, Storyteller, Web Developer", img: "image" },
-{ name: "Simon Jutvreten", role: "Programmer", img: "image" },
-{ name: "Erik Olsson", role: "Programmer, Level Designer", img: "image" },
-];
+  const team = [
+    { name: "Pontus Andersson", role: "Programmer, Storyteller", img: "image" },
+    { name: "Arindam Kishore Dutta", role: "Animator, Designer, Storyteller", img: "image" },
+    { name: "Elin Eriksson", role: "Tileset Artist, Storyteller, Web Developer", img: "image" },
+    { name: "Simon Jutwreten", role: "Lead Programmer, Game Designer, Sound Designer, Music Composer", img: "image" },
+    { name: "Erik Olsson", role: "Programmer, Level Designer", img: "image" },
+  ];
 
   return (
     <div className="home-container">

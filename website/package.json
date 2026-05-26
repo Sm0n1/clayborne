@@ -2,6 +2,7 @@
   "name": "clayborne",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://Sm0n1.github.io/clayborne",
   "dependencies": {
     "lucide-react": "^1.16.0",
     "react": "^18.2.0",

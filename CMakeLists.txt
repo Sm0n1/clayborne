@@ -81,26 +81,28 @@ endif()
 
 if(EMSCRIPTEN)
     set_target_properties(clayborne PROPERTIES
-        SUFFIX ".html"
+        SUFFIX ""
     )
 
     target_compile_options(clayborne PUBLIC
-        "-g3"
         "-fexceptions"
     )
 
     target_link_options(clayborne PRIVATE
-        "-O0"
-        "-g3"
-        "-sASSERTIONS=2"
-        "-sEXCEPTION_STACK_TRACES=1"
-        "-sDISABLE_EXCEPTION_CATCHING=0"
+        # "-O0"
+        # "-g3"
+        # "-sASSERTIONS=2"
+        # "-sEXCEPTION_STACK_TRACES=1"
+        # "-sDISABLE_EXCEPTION_CATCHING=0"
 
         "-sUSE_SDL=3"
         "-sALLOW_MEMORY_GROWTH=1"
         "-sNO_EXIT_RUNTIME=1"
-        # "-sMODULARIZE=1"
         "-sFORCE_FILESYSTEM=1"
         "--preload-file" "${CMAKE_SOURCE_DIR}/data@/data"
+
+        "-sMODULARIZE=1"
+        "-sEXPORT_ES6=0"
+        "-sEXPORT_NAME=clayborneModule"
     )
 endif()
