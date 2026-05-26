@@ -97,6 +97,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: website/package-lock.json
 
       - name: Install Dependencies
         working-directory: website
@@ -115,7 +116,7 @@ jobs:
           test -f build/clayborne.js
           test -f build/clayborne.wasm
           test -f build/clayborne.data
-          
+
           cp -v build/clayborne.js   website/build/game/
           cp -v build/clayborne.wasm website/build/game/
           cp -v build/clayborne.data website/build/game/
