@@ -54,23 +54,31 @@ const canvasRef = useRef(null);
             </p>
         </div>
 
-        {!started && (
-            <div className="play-preview">
-                <img className="game-bg" src={bgImg} alt="Game background" />
+        <div className="play-preview">
+            {!started && (
+                <>
+                    <img className="game-bg" src={bgImg} alt="Game background" />
+                    <img className="game-fg" src={fgImg} alt="Game foreground" />
+                    <img className="game-text" src={textImg} alt="Clayborne logo" />
+                </>
+            )}
 
-                <img className="game-fg" src={fgImg} alt="Game foreground" />
-
-                <img className="game-text" src={textImg} alt="Clayborne logo" />
-            </div>
-        )}
-
-        <canvas
-            ref={canvasRef}
-            id="canvas"
-            className="game-canvas"
-            style={{ display: started ? 'block' : 'none' }}
-            tabIndex={0}
-        />
+            <canvas
+                ref={canvasRef}
+                id="canvas"
+                className="game-canvas"
+                style={{
+                    position: started ? 'static' : 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    opacity: started ? 1 : 0,
+                    pointerEvents: started ? 'auto' : 'none',
+                }}
+                tabIndex={0}
+            />
+        </div>
 
         <div className="play-launch">
             {!started && (
