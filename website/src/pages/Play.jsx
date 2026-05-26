@@ -1,15 +1,12 @@
-
 import './Play.css';
 import bgImg from "../main-menu/Mainmenu_BG.png";
 import fgImg from "../main-menu/Mainmenu_FG.png";
 import textImg from "../main-menu/Mainmenu_text.png";
 import React, { useRef, useState } from 'react';
-import { initGame } from '../gameLoader';
+import { initGame } from '../gameLoader.jsx';
 import './Play.css';
 
 function Play() {
-
-
 
   const controls = [
   { key: 'W·A·S·D', action: 'Move Left / right', desc: '' },
@@ -79,7 +76,14 @@ const canvasRef = useRef(null);
     Play instantly in your browser
   </p>
 
-  {error && <p>Failed to load game</p>}
+  {error && <p>{String(error.message || error)}</p>}
+
+  <canvas
+    ref={canvasRef}
+    width={800}
+    height={600}
+    style={{ display: started ? "block" : "none" }}
+  />
 </div>
           
       
@@ -106,3 +110,4 @@ const canvasRef = useRef(null);
 }
 
 export default Play;
+
