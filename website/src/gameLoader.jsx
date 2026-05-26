@@ -11,7 +11,7 @@ function loadScriptOnce() {
         const script = document.createElement("script");
 
         const publicUrl = process.env.PUBLIC_URL || '';
-        script.src = "${publicUrl}/game/clayborne.js";        
+        script.src = `${publicUrl}/game/clayborne.js`;        
         script.async = true;
 
         script.onload = () => resolve();
