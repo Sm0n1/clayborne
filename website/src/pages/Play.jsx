@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { initGame } from './game/gameLoader';
+import { initGame } from '../gameLoader';
 import './Play.css';
 
 function Play() {
