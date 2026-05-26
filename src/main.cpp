@@ -11,7 +11,6 @@
 #include <SDL3_image/SDL_image.h>
 #include <entt/entt.hpp>
 #include <cstdio>
-#include "engine/input/manager.hpp"
 #include "camera.hpp"
 #include "player.hpp"
 #include "physics.hpp"
@@ -39,8 +38,6 @@ struct gamestate {
     clayborne::texture_cache textures{};
     clayborne::animation_cache animations{};
     clayborne::audio_cache sounds{};
-
-    clayborne::input::manager inputs;
 
     SDL_Gamepad *gamepad{ nullptr };
 
@@ -177,9 +174,6 @@ try {
     
     // Initialize timer
     gs.current_time = SDL_GetTicksNS();
-
-    // Initialize input manager
-    gs.inputs = {};
 
     // Initialize gamepad if available
     gs.gamepad = find_gamepad();
@@ -433,7 +427,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
         }
 
         clayborne::update_menu(gs.registry, dt_ns, gs.is_started, gs.start_timer);
-        clayborne::update_player(gs.player, gs.registry, gs.inputs, dt_ns, gs.sounds, gs.mixer, gs.is_started, gs.start_timer);
+        clayborne::update_player(gs.player, gs.registry, dt_ns, gs.sounds, gs.mixer, gs.is_started, gs.start_timer);
         clayborne::update_heads(gs.registry, dt_ns, gs.animations, gs.sounds, gs.mixer);
         clayborne::update_physics(gs.registry, dt_ns);
         clayborne::sense(gs.registry);

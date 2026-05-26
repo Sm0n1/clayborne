@@ -64,8 +64,6 @@ target_sources(clayborne PRIVATE
     src/audio.cpp
     src/level_loader.cpp
 	src/vfx.cpp
-    src/engine/input/manager.cpp
-    src/engine/input/map.cpp
 )
 
 if(MSVC)

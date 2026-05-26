@@ -409,7 +409,6 @@ namespace clayborne {
     void update_player(
         entt::entity player_entity,
         entt::registry &registry,
-        const input::manager &inputs,
         Uint64 dt_ns,
         // TODO: Replace with events
         audio_cache &sounds,
@@ -423,11 +422,6 @@ namespace clayborne {
         }
 
         const float delta_time{ static_cast<float>(static_cast<double>(dt_ns) / SDL_NS_PER_SECOND) };
-
-        for (auto event : inputs.get_events()) {
-            // use event information???
-            (void)event;
-        }
 
         auto &player{ registry.get<clayborne::player>(player_entity) };
         auto &velocity{ registry.get<clayborne::velocity>(player_entity) };

@@ -290,8 +290,6 @@ namespace clayborne {
             const Uint8 alpha{
                 static_cast<Uint8>(SDL_fabsf(SDL_sinf(t)) * 255.0f)
             };
-            
-            SDL_Log("t = %f, alpha = %d", static_cast<double>(t), alpha);
 
             SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, alpha);

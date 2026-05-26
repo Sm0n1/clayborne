@@ -5,7 +5,6 @@
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_timer.h>
 #include <entt/entt.hpp>
-#include "engine/input/manager.hpp"
 #include "sprite.hpp"
 #include "audio.hpp"
 
@@ -145,7 +144,6 @@ namespace clayborne {
     void update_player(
         entt::entity player_entity,
         entt::registry &registry,
-        const input::manager &inputs,
         Uint64 dt_ns,
         // TODO: Replace with events
         audio_cache &sounds,
