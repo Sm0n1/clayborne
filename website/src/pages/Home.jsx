@@ -9,18 +9,23 @@ import runSprite from "../images/run.png";
 import jumpSprite from "../images/jump.png";
 import runBodySprite from "../images/run_body.png";
 import fallBodySprite from "../images//fall_body.png"
-
+import paStone from "../images/group pentastones/pa.png";
+import akdStone from "../images/group pentastones/akd.png";
+import eeStone from "../images/group pentastones/ee.png";
+import sjStone from "../images/group pentastones/sj.png";
+import eoStone from "../images/group pentastones/eo.png";
 
 function Home() {
+
   const [activeTab, setActiveTab] = useState(0);
 
-  const team = [
-    { name: "Pontus Andersson", role: "Programmer, Storyteller", img: "image" },
-    { name: "Arindam Kishore Dutta", role: "Animator, Designer, Storyteller", img: "image" },
-    { name: "Elin Eriksson", role: "Tileset Artist, Storyteller, Web Developer", img: "image" },
-    { name: "Simon Jutwreten", role: "Lead Programmer, Game Designer, Sound Designer, Music Composer", img: "image" },
-    { name: "Erik Olsson", role: "Programmer, Level Designer", img: "image" },
-  ];
+   const team = [
+{ name: "Pontus Andersson", role: "Programmer, Storyteller", img: paStone },
+{ name: "Arindam Kishore Dutta", role: "Lead Artist, Animator, Storyteller", img: akdStone},
+{ name: "Elin Eriksson", role: "Tileset Artist, Storyteller, Web Developer", img: eeStone },
+{ name: "Simon Jutvreten", role: "Lead Programmer, Game Designer, Sound Designer, Music Composer", img: sjStone },
+{ name: "Erik Olsson", role: "Programmer, Level Designer", img: eoStone },
+];
 
   return (
     <div className="home-container">
@@ -85,7 +90,7 @@ function Home() {
             {team.map((person, index) => (
               <div className="profile-card" key={index}>
                 <img src={person.img} alt={person.name} />
-                <p>{person.name}</p>
+                <p className="member-name">{person.name}</p>
                 <p className="member-role">{person.role}</p>
               </div>
             ))}
