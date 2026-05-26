@@ -22,12 +22,12 @@
 #include "vfx.hpp"
 #include "menu.hpp"
 
-#ifndef GAME_WIDTH
-#define GAME_WIDTH 1280
+#ifndef WINDOW_WIDTH
+#define WINDOW_WIDTH 1280
 #endif
 
-#ifndef GAME_HEIGHT
-#define GAME_HEIGHT 720
+#ifndef WINDOW_HEIGHT
+#define WINDOW_HEIGHT 720
 #endif
 
 struct gamestate {

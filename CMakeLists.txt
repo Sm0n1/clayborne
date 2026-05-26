@@ -99,8 +99,8 @@ endif()
 
 if(EMSCRIPTEN)
     target_compile_definitions(game PRIVATE
-        GAME_WIDTH=320
-        GAME_HEIGHT=180
+        WINDOW_WIDTH=320
+        WINDOW_HEIGHT=180
     )
     
     set_target_properties(clayborne PROPERTIES
