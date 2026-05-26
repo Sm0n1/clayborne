@@ -54,13 +54,23 @@ const canvasRef = useRef(null);
             </p>
         </div>
 
-        <div className="play-preview">
-            <img className="game-bg" src={bgImg} alt="Game background" />
+        {!started && (
+            <div className="play-preview">
+                <img className="game-bg" src={bgImg} alt="Game background" />
 
-            <img className="game-fg" src={fgImg} alt="Game foreground" />
+                <img className="game-fg" src={fgImg} alt="Game foreground" />
 
-            <img className="game-text" src={textImg} alt="Clayborne logo" />
-        </div>
+                <img className="game-text" src={textImg} alt="Clayborne logo" />
+            </div>
+        )}
+
+        <canvas
+            ref={canvasRef}
+            id="canvas"
+            className="game-canvas"
+            style={{ display: started ? 'block' : 'none' }}
+            tabIndex={0}
+        />
 
         <div className="play-launch">
             {!started && (
@@ -76,13 +86,6 @@ const canvasRef = useRef(null);
                     {error && <p>Failed to load game</p>}
                 </div>
             )}
-
-            <canvas
-                ref={canvasRef}
-                id="canvas"
-                className="game-canvas"
-                tabIndex={0}
-            />
         </div>
 
         <div className="controls-section">

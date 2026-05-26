@@ -98,6 +98,11 @@ else()
 endif()
 
 if(EMSCRIPTEN)
+    target_compile_definitions(game PRIVATE
+        GAME_WIDTH=320
+        GAME_HEIGHT=180
+    )
+    
     set_target_properties(clayborne PROPERTIES
         SUFFIX ".js"
     )

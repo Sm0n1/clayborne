@@ -22,6 +22,14 @@
 #include "vfx.hpp"
 #include "menu.hpp"
 
+#ifndef GAME_WIDTH
+#define GAME_WIDTH 1280
+#endif
+
+#ifndef GAME_HEIGHT
+#define GAME_HEIGHT 720
+#endif
+
 struct gamestate {
     SDL_Window *window{ nullptr };
     SDL_Renderer *renderer{ nullptr };
@@ -92,7 +100,7 @@ try {
     }
 
     // Initialize window
-    gs.window = SDL_CreateWindow("Clayborne", 1280, 720, SDL_WINDOW_RESIZABLE);
+    gs.window = SDL_CreateWindow("Clayborne", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE);
     if (!gs.window) {
         SDL_Log("SDL create window failed: %s", SDL_GetError());
         return SDL_APP_FAILURE;
