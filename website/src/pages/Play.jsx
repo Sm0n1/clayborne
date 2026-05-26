@@ -10,7 +10,7 @@ function Play() {
     const [error, setError] = useState(null);
 
     async function handleStart() {
-        if (started || loaded) {
+        if (started || loading) {
             return;
         }
 
@@ -53,7 +53,7 @@ function Play() {
 
         <div className="play-launch">
             {!started && (
-                <div className="launch-button">
+                <div className="launch-btn">
                     <button onClick={handleStart} disabled={loading}>
                         {loading ? "Loading..." : "Launch Game"}
                     </button>
