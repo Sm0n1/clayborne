@@ -14,7 +14,14 @@ function loadScriptOnce() {
         script.src = `${publicUrl}/game/clayborne.js`;        
         script.async = true;
 
-        script.onload = () => resolve();
+        script.onload = () => {
+                console.log("Script loaded, window.clayborneModule =", window.clayborneModule);
+                if (!window.clayborneModule) {
+                    reject(new Error("Script loaded but window.clayborneModule is undefined"));
+                } else {
+                    resolve();
+                }
+            };
         script.onerror = () => reject(new Error("Failed to load game script"));
 
         document.body.appendChild(script);
