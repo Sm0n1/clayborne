@@ -4,7 +4,6 @@ import fgImg from "../main-menu/Mainmenu_FG.png";
 import textImg from "../main-menu/Mainmenu_text.png";
 import React, { useRef, useState } from 'react';
 import { initGame } from '../gameLoader';
-import './Play.css';
 
 function Play() {
 const canvasRef = useRef(null);
