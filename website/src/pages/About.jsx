@@ -22,7 +22,7 @@ function About() {
 { name: "Pontus Andersson", role: "Programmer, Storyteller", img: "image" },
 { name: "Arindam Kishore Dutta", role: "Lead Artist, Animator, Storyteller", img: "image" },
 { name: "Elin Eriksson", role: "Tileset Artist, Storyteller, Web Developer", img: "image" },
-{ name: "Simon Jutvreten", role: "Lead Programmer, Sound Designer, Music Composer", img: "image" },
+{ name: "Simon Jutvreten", role: "Lead Programmer, Game Designer, Sound Designer, Music Composer", img: "image" },
 { name: "Erik Olsson", role: "Programmer, Level Designer", img: "image" },
 ];
 
