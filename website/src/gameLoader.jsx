@@ -39,7 +39,9 @@ export async function initGame(canvas) {
 
         modulePromise = window.clayborneModule({
             canvas: canvas,
-            locateFile: (path) => `${publicUrl}/game/${path}`
+            locateFile: (path) => `${publicUrl}/game/${path}`,
+            print: (msg) => console.log(msg),
+            printErr: (msg) => console.log(msg),
         }).then((mod) => {
             moduleInstance = mod;
             return mod;
