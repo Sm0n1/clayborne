@@ -36,7 +36,7 @@ export async function initGame(canvas) {
 
     if (!modulePromise) {
         const publicUrl = process.env.PUBLIC_URL || '';
-        
+
         modulePromise = window.clayborneModule({
             canvas: canvas,
             locateFile: (path) => `${publicUrl}/game/${path}`

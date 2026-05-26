@@ -68,6 +68,7 @@ function Play() {
 
             <canvas
                 ref={canvasRef}
+                id="canvas"
                 className="game-canvas"
                 tabIndex={0}
             />
