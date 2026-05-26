@@ -38,9 +38,9 @@ const canvasRef = useRef(null);
     ];
 
     return (
-  <div className="play-page">
+        <div className="play-page">
 
-    <div className="play-header">
+        <div className="play-header">
             <p className="play-subtitle">
                 Ready to play?
             </p>
@@ -49,29 +49,29 @@ const canvasRef = useRef(null);
                 Clayborne
             </h2>
 
-      <p className="play-desc">
-        A puzzle platformer about losing your head....literally.
-      </p>
-    </div>
+            <p className="play-desc">
+                A puzzle platformer about losing your head....literally.
+            </p>
+        </div>
 
-    <div className="play-preview">
-      <img className="game-bg" src={bgImg} alt="Game background" />
+        <div className="play-preview">
+            <img className="game-bg" src={bgImg} alt="Game background" />
 
-      <img className="game-fg" src={fgImg} alt="Game foreground" />
+            <img className="game-fg" src={fgImg} alt="Game foreground" />
 
-      <img className="game-text" src={textImg} alt="Clayborne logo" />
-    </div>
+            <img className="game-text" src={textImg} alt="Clayborne logo" />
+        </div>
 
-    <div className="play-launch">
+        <div className="play-launch">
             {!started && (
                 <div>
-  <button
-    className="launch-btn"
-    onClick={handleStart}
-    disabled={loading}
-  >
-    {loading ? "Loading..." : "Launch Game"}
-  </button>
+                    <button
+                        className="launch-btn"
+                        onClick={handleStart}
+                        disabled={loading}
+                    >
+                        {loading ? "Loading..." : "Launch Game"}
+                    </button>
 
                     {error && <p>Failed to load game</p>}
                 </div>
