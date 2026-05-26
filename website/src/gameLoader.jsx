@@ -44,13 +44,18 @@ export async function initGame(canvas) {
     if (!modulePromise) {
         const publicUrl = process.env.PUBLIC_URL || '';
         
-        modulePromise = window.clayborneModule({
-            canvas: canvas,
-            locateFile: (path) => `${publicUrl}/game/${path}`
-        }).then((mod) => {
-            moduleInstance = mod;
-            return mod;
-        });
+modulePromise = window.clayborneModule({
+    canvas: canvas,
+    locateFile: (path, prefix) => {
+        const publicUrl = process.env.PUBLIC_URL || '';
+        console.log('locateFile called:', path, '->', `${publicUrl}/game/${path}`);
+        return `${publicUrl}/game/${path}`;
+    }
+}).then((mod) => {
+    moduleInstance = mod;
+    return mod;
+});
+        
     }
 
     return modulePromise;
