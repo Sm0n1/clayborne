@@ -9,7 +9,7 @@ function loadScriptOnce() {
 
     scriptPromise = new Promise((resolve, reject) => {
         const script = document.createElement("script");
-        script.src = "/game/clayborne.js";
+        script.src = "${publicUrl}/game/clayborne.js";
         script.async = true;
 
         script.onload = () => resolve();
