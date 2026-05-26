@@ -53,8 +53,12 @@ function Play() {
 
         <div className="play-launch">
             {!started && (
-                <div className="launch-btn">
-                    <button onClick={handleStart} disabled={loading}>
+                <div>
+                    <button
+                        className="launch-btn"
+                        onClick={handleStart}
+                        disabled={loading}
+                    >
                         {loading ? "Loading..." : "Launch Game"}
                     </button>
 
