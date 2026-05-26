@@ -93,7 +93,7 @@ namespace clayborne {
         if (!is_default_open) {
             registry.emplace<collider>(entity, w, h, std::nullopt);
             sr.alpha = 255;
-            sr.z = 1;
+            sr.z = 2;
         }
         else {
             sr.alpha = 128;
@@ -128,7 +128,7 @@ namespace clayborne {
             if (!overlap_any<struct velocity>(registry, de, dp, dc)) {
                 registry.emplace_or_replace<collider>(de, dc);
                 dsr.alpha = 255;
-                dsr.z = 1;
+                dsr.z = 2;
             }
         }
     }
