@@ -1,0 +1,130 @@
+.about-page {
+
+    padding: 40px 20px;
+}
+
+.about-container {
+  max-width: 860px;
+    margin-top: 0;
+    padding: 40px 20px;
+}
+
+.about-section {
+  margin-bottom: 4rem;
+}
+
+
+.pageTitel{
+  font-family: "Metamorphous", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.about-text{
+  font-family: "Modern Antiqua", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+
+
+/************/
+/*.info-card {
+  font-family: "Metamorphous", serif;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+
+  padding: 2rem;
+  margin-top: 3rem;
+
+  border-radius: 12px;
+
+  transition: 0.3s;
+}*/
+.card-container {
+  display: flex;
+  font-family: "Metamorphous", serif;
+  flex-direction: row;       /* explicitly side by side */
+  gap: 2rem;
+  justify-content: center;
+  align-items: stretch;
+  margin-top: 4rem;
+  flex-wrap: wrap;
+}
+
+.info-card {
+  flex: 1 1 280px;           /* grow/shrink, min 280px before wrapping */
+  max-width: 420px;
+  padding: 2rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.info-card:hover {
+  transform: translateY(-5px);
+  border-color: white;
+  box-shadow: 0 0 20px rgba(255,255,255,0.1);
+}
+
+.info-card img {
+  width: 100%;
+  max-width: 100px;
+  margin-top: 1.5rem;
+  border-radius: 12px;
+  align-items: center;
+}
+
+.mechanics-section {
+  margin: 2rem 0;
+}
+
+.mechanics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 1rem;
+}
+
+.mechanic-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: 0.2s;
+}
+
+.mechanic-card:hover {
+  border-color: rgba(255,255,255,0.3);
+  transform: translateY(-3px);
+}
+
+.mechanic-icon {
+  font-size: 28px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.mechanic-title {
+  font-family: "Metamorphous", serif;
+  font-weight: 400;
+  font-size: 16px;
+  margin: 0 0 6px;
+}
+
+.mechanic-desc {
+  font-size: 13px;
+  font-family: "Metamorphous", serif;
+  color: rgba(255,255,255,0.5);
+  margin: 0;
+  line-height: 1.5;
+}
+.mechanic-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  margin-bottom: 1rem;
+  opacity: 0.9;
+}
