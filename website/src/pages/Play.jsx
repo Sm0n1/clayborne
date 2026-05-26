@@ -51,11 +51,11 @@ function Play() {
             </p>
         </div>
 
-        <div className="play-game">
+        <div className="play-launch">
             {!started && (
-                <div className="game-overlay">
+                <div className="launch-button">
                     <button onClick={handleStart} disabled={loading}>
-                        {loading ? "Loading..." : "Play Game"}
+                        {loading ? "Loading..." : "Launch Game"}
                     </button>
 
                     {error && <p>Failed to load game</p>}
