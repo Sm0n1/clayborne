@@ -98,7 +98,7 @@ else()
 endif()
 
 if(EMSCRIPTEN)
-    target_compile_definitions(game PRIVATE
+    target_compile_definitions(clayborne PRIVATE
         WINDOW_WIDTH=320
         WINDOW_HEIGHT=180
     )
