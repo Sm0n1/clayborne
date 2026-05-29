@@ -42,7 +42,7 @@ const mechanics = [
 ];
 
 function handleGDDC() {
-    window.open("GOOGLE DRIVE LINK", "_blank");
+    window.open("https://drive.google.com/file/d/1pFwsO2THf_79zXI-dyFaQOeoZnESA4Fr/view?usp=share_link", "_blank");
   }
 
   function handleGitHub() {
